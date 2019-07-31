@@ -119,6 +119,8 @@ public class TexasPokerHand
             }
             if (matchList.Count >= 4)
             {
+                if (matchList[0].value == CardValue.Ace && rankingCard.value == CardValue.Five)
+                    matchList[0].value = CardValue.LowAce;
                 rankingCard = checkedCard;
                 tieBreakerCards = new List<Card>();
                 tieBreakerCards.AddRange(matchList);
@@ -260,6 +262,8 @@ public class TexasPokerHand
             matchList = DistinctCardsByValue(matchList);
             if (matchList.Count >= 4)
             {
+                if (matchList[0].value == CardValue.Ace && rankingCard.value == CardValue.Five)
+                    matchList[0].value = CardValue.LowAce;
                 rankingCard = checkedCard;
                 tieBreakerCards = matchList;
                 tieBreakerCards.Sort(new CompareCardsByValue());
