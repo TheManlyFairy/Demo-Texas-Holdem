@@ -4,11 +4,8 @@ using UnityEngine;
 
 public class CommunityHandDisplay : MonoBehaviour
 {
-    int communityIndex;
     [SerializeField]
     CardDisplay[] communityCardsDisplay;
-
-    public int CommunityIndex { get { return communityIndex; } }
 
     private void Start()
     {
@@ -22,9 +19,9 @@ public class CommunityHandDisplay : MonoBehaviour
     {
         for(int i=0; i<5; i++)
         {
-            if (Dealer.dealerRef.communityCards[i] != null)
+            if (Dealer.CommunityCards[i] != null)
             {
-                communityCardsDisplay[i].InitializeCard(Dealer.dealerRef.communityCards[i]);
+                communityCardsDisplay[i].InitializeCard(Dealer.CommunityCards[i]);
                 communityCardsDisplay[i].gameObject.SetActive(true);
             }
             else
