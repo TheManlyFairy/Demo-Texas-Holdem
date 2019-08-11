@@ -72,6 +72,7 @@ public class UIManager : MonoBehaviour
             GameManager.CurrentPlayer.Fold();
             betValueSlider.value = 0;
         });
+        PhotonGameManager.OnDealingCards += UpdatePlayerDisplay;
     }
     void UpdateGameInterface()
     {
@@ -94,6 +95,8 @@ public class UIManager : MonoBehaviour
             callBet.gameObject.SetActive(false);
             check.gameObject.SetActive(true);
         }
+        playerHandDisplay.SetupPlayerHand(PhotonGameManager.CurrentPlayer);
+        playerName.text = PhotonGameManager.CurrentPlayer.name;
     }
     public void DebugShowPlayer(int index)
     {
@@ -101,5 +104,7 @@ public class UIManager : MonoBehaviour
         currentPot.text = "Total Cash Prize: " + Dealer.Pot;
         playerHandDisplay.SetupPlayerHand(GameManager.players[index]);
         playerName.text = GameManager.players[index].name;
+        playerHandDisplay.SetupPlayerHand(PhotonGameManager.players[index]);
+        playerName.text = PhotonGameManager.players[index].name;
     }
 }

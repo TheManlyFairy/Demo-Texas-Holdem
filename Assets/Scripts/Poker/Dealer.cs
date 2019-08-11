@@ -3,7 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using Utilities;
-public class Dealer : MonoBehaviour
+using Photon.Realtime;
+using ExitGames.Client.Photon;
+using Photon.Pun;
+
+public class Dealer : MonoBehaviourPun
 {
     #region Variables
     public static event CommunityCardsUpdate OnCommunityUpdate;
@@ -79,9 +83,11 @@ public class Dealer : MonoBehaviour
     {
         for (int i = 0; i < 2; i++)
         {
-            foreach (Player p in GameManager.players)
+            foreach (Player p in PhotonGameManager.players)
             {
                 p.Draw();
+               // if(p.photonView.IsMine)
+                UpdateNetworkPlayers(p,i);
             }
         }
     }
@@ -114,11 +120,11 @@ public class Dealer : MonoBehaviour
             communityCards[4] = Pull();
             if (OnCommunityUpdate != null)
                 OnCommunityUpdate();
-
+            PhotonGameManager.instance.DeclareWinner();
             dealerRef.StartCoroutine(dealerRef.BettingRound());
         }
     }
-    void SetCardSprite(Card card)
+   public void SetCardSprite(Card card)
     {
         int indexer;
         if (card.value == CardValue.Ace)
@@ -255,4 +261,21 @@ public class Dealer : MonoBehaviour
     {
 
     }*/
+
+    void UpdateNetworkPlayers(Player player,int cardIndex)
+    {
+       CardValue tempCardValue =  player.cards[cardIndex].value;
+       CardSuit tempCardSuit = player.cards[cardIndex].suit;
+
+        object[] datas = new object[] { tempCardValue,tempCardSuit };
+        RaiseEventOptions raiseEventOptions = new RaiseEventOptions()
+        {
+            Receivers = ReceiverGroup.Others,
+            CachingOption = EventCaching.DoNotCache
+        };
+        SendOptions sendOptions = new SendOptions() { Reliability = false };
+
+        PhotonNetwork.RaiseEvent((byte)EventCodes.PlayerCards, datas, raiseEventOptions, sendOptions);
+
+    }
 }
