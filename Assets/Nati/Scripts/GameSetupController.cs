@@ -7,21 +7,35 @@ using UnityEngine.UI;
 
 public class GameSetupController : MonoBehaviour
 {
-    Vector3 randomPosition;
     [SerializeField] GameObject playerPrefab;
+    [SerializeField] GameObject playerButtonPrefab;
+    [SerializeField] Transform playerButtonsContainer;
     [SerializeField] Text roomName;
 
     void Start()
     {
         roomName.text = PhotonNetwork.CurrentRoom.Name;
-        CreatePlayer(); 
+        //CreatePlayer();
+       // PhotonGameManager.instance.FindPlayers();
+        CreatePlayerButton();
     }
 
-  void CreatePlayer()
+
+
+
+    void CreatePlayer()
     {
-        randomPosition = new Vector3(Random.Range(0, 3), Random.Range(0, 3), Random.Range(0, 3));
+
         Debug.Log("Creating Player");
-        PhotonNetwork.Instantiate(playerPrefab.name, Vector3.zero + randomPosition, Quaternion.identity);
-        
+        PhotonNetwork.Instantiate(playerPrefab.name, playerButtonsContainer.position, Quaternion.identity);
+
+
+    }
+
+    void CreatePlayerButton()
+    {
+        Debug.Log("Creating Player Button");
+        GameObject tempButton = PhotonNetwork.Instantiate(playerButtonPrefab.name, playerButtonsContainer.position, Quaternion.identity);
+        tempButton.transform.parent = playerButtonsContainer;
     }
 }

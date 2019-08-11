@@ -9,18 +9,18 @@ public class UIManager : MonoBehaviour
     public CommunityHandDisplay communityHandDisplay;
     private void Start()
     {
-        GameManager.OnDealingCards += UpdatePlayerDisplay;
+        PhotonGameManager.OnDealingCards += UpdatePlayerDisplay;
     }
 
     void UpdatePlayerDisplay()
     {
-        playerHandDisplay.SetupPlayerHand(GameManager.CurrentPlayer);
-        playerName.text = GameManager.CurrentPlayer.name;
+        playerHandDisplay.SetupPlayerHand(PhotonGameManager.CurrentPlayer);
+        playerName.text = PhotonGameManager.CurrentPlayer.name;
     }
 
     public void DebugShowPlayer(int index)
     {
-        playerHandDisplay.SetupPlayerHand(GameManager.players[index]);
-        playerName.text = GameManager.players[index].name;
+        playerHandDisplay.SetupPlayerHand(PhotonGameManager.players[index]);
+        playerName.text = PhotonGameManager.players[index].name;
     }
 }

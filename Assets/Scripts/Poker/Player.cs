@@ -4,7 +4,13 @@ using UnityEngine;
 using System.Linq;
 using Utilities;
 using UnityEngine.UI;
-public class Player : MonoBehaviour
+using Photon.Pun;
+using Photon.Realtime;
+using ExitGames.Client.Photon;
+
+
+
+public class Player : MonoBehaviourPunCallbacks, IOnEventCallback
 {
     public List<Card> cards = new List<Card>();
     public TexasPokerHand hand;
@@ -16,6 +22,8 @@ public class Player : MonoBehaviour
         hand = new TexasPokerHand();
         playStatus = PlayStatus.Betting;
         //DebugShowPlayerHand();
+
+        SendViewIdToServer();
     }
     public void Draw()
     {
@@ -52,5 +60,40 @@ public class Player : MonoBehaviour
     public void SetHandStrength()
     {
         hand.GetHandStrength(cards);
+    }
+
+    void SendViewIdToServer()
+    {
+        if (photonView.IsMine)
+        {
+            object[] datas = new object[] { photonView.ViewID };
+            RaiseEventOptions raiseEventOptions = new RaiseEventOptions()
+            {
+                Receivers = ReceiverGroup.MasterClient
+            };
+            SendOptions sendOptions = new SendOptions() { Reliability = false };
+
+            PhotonNetwork.RaiseEvent((byte)EventCodes.PlayerViewId, datas, raiseEventOptions, sendOptions);
+        }
+        
+    }
+
+    public void OnEvent(EventData photonEvent)
+    {
+        byte eventCode = photonEvent.Code;
+
+        if (eventCode == (byte)EventCodes.PlayerCards && photonView.IsMine)
+        {
+            object[] data = (object[])photonEvent.CustomData;
+            Card newCard;
+            CardValue value = (CardValue)data[0];
+            newCard = ScriptableObject.CreateInstance<Card>();
+            newCard.name = value + " of " + (CardSuit)data[1];
+            newCard.value = value;
+            newCard.suit = (CardSuit)data[1];
+            Dealer.dealerRef.SetCardSprite(newCard);
+            cards.Add(newCard);
+            Debug.Log("Player " + this.photonView.ViewID + " Recieved card " + (CardValue)data[0] + " of " + (CardSuit)data[1]);
+        }
     }
 }
