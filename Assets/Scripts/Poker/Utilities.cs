@@ -8,7 +8,7 @@ namespace Utilities
     public enum CardSuit { Spade = 0, Heart = 1, Diamond = 2, Clover = 3 }
     public enum Hand { Royal = 9, StraightFlush = 8, FourKind = 7, FullHouse = 6, Flush = 5, Straight = 4, ThreeKind = 3, TwoPair = 2, Pair = 1, High = 0 }
     public enum PlayStatus { Betting, Checked, Folded }
-    public enum EventCodes {PlayerViewId,PlayerCards };
+    public enum EventCodes {PlayerViewId,PlayerCards }
 
     public delegate void DealingCardsEvent();
     public delegate void CommunityCardsUpdate();
