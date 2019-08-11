@@ -8,8 +8,6 @@ using Photon.Pun;
 using Photon.Realtime;
 using ExitGames.Client.Photon;
 
-
-
 public class Player : MonoBehaviourPunCallbacks, IOnEventCallback
 {
     public List<Card> cards = new List<Card>();

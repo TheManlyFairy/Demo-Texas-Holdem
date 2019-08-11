@@ -18,7 +18,7 @@ public class Dealer : MonoBehaviourPun
 
     static Card[] communityCards;
     static List<Card> deck;
-    static Dealer dealerRef;
+    public static Dealer dealerRef;
     static int minimumBet;
     static int currentBetToMatch;
     static int pot = 0;

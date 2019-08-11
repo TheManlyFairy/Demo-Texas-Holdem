@@ -137,22 +137,7 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
         }
         return winningPlayers;
     }
-    IEnumerator DiscardRound()
-    {
-        foreach (Player player in players)
-        {
-            currentPlayer = player;
-            if (OnDealingCards != null)
-                OnDealingCards();
-            while (!currentPlayer.hasDiscardedCards)
-            {
-                yield return null;
-            }
-
-        }
-        yield return null;
-        StartCoroutine(BettingRound());
-    }
+    
     IEnumerator BettingRound()
     {
         List<Player> bettingPlayers = GameManager.players;
@@ -176,5 +161,23 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
             Debug.Log("Players found: " + players.Count);
         }
     }
-    
+
+    #region Unused Methods
+    /*IEnumerator DiscardRound()
+    {
+        foreach (Player player in players)
+        {
+            currentPlayer = player;
+            if (OnDealingCards != null)
+                OnDealingCards();
+            while (!currentPlayer.hasDiscardedCards)
+            {
+                yield return null;
+            }
+
+        }
+        yield return null;
+        StartCoroutine(BettingRound());
+    }*/
+    #endregion
 }
