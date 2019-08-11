@@ -50,7 +50,7 @@ public class TexasPokerHand
     {
         allCards = new List<Card>();
         allCards.AddRange(playerCards);
-        allCards.AddRange(Dealer.dealerRef.communityCards);
+        allCards.AddRange(Dealer.CommunityCards);
         allCards.Sort(new CompareCardsByValue());
 
         if (RoyalFlush(allCards)) { strength= Hand.Royal; return; }

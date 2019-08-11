@@ -11,7 +11,6 @@ public class PlayerHandDisplay : MonoBehaviour
     private void Start()
     {
         //CreateButtons();
-        displayCards = GetComponentsInChildren<CardDisplay>();
     }
 
    /* void CreateButtons()

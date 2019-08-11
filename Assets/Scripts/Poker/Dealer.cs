@@ -5,20 +5,34 @@ using System.Linq;
 using Utilities;
 public class Dealer : MonoBehaviour
 {
-    public static Dealer dealerRef;
+    #region Variables
     public static event CommunityCardsUpdate OnCommunityUpdate;
-    public List<Card> cards;
+    public static event InterfaceUpdate OnInterfaceUpdate;
+    public static List<Player> bettingPlayers;
     public List<Sprite> deckSprites;
-    public Card[] communityCards;
+    public List<Player> DebugShowBettingPlayers;
 
-    public int pot=0;
+    static Card[] communityCards;
+    static List<Card> deck;
+    static Dealer dealerRef;
+    static int minimumBet;
+    static int currentBetToMatch;
+    static int pot = 0;
+    static bool finalBettingRound;
+    #endregion
+    #region Properties
+    public static Card[] CommunityCards { get { return communityCards; } }
+    public static int HighestBetMade { get { return currentBetToMatch; } }
+    public static int Pot { get { return pot; } }
+    public static int MinimumBet { get { return minimumBet; } }
+
+    #endregion
     //List<Player> players;
 
     private void Awake()
     {
         dealerRef = this;
     }
-
     public static void StartGame()
     {
         dealerRef.BuildDeck();
@@ -27,7 +41,7 @@ public class Dealer : MonoBehaviour
     }
     void BuildDeck()
     {
-        cards = new List<Card>();
+        deck = new List<Card>();
         communityCards = new Card[5];
         CardValue value;
         CardSuit suit;
@@ -43,7 +57,7 @@ public class Dealer : MonoBehaviour
                 newCard.value = value;
                 newCard.suit = suit;
                 SetCardSprite(newCard);
-                dealerRef.cards.Add(newCard);
+                deck.Add(newCard);
             }
         }
         //Debug.Log("Built deck of " + cards.Count + " cards");
@@ -52,12 +66,12 @@ public class Dealer : MonoBehaviour
     {
         Card temp;
         int randomIndex;
-        for (int i = 0; i < cards.Count; i++)
+        for (int i = 0; i < deck.Count; i++)
         {
-            randomIndex = Random.Range(0, cards.Count);
-            temp = cards[randomIndex];
-            cards[randomIndex] = cards[i];
-            cards[i] = temp;
+            randomIndex = Random.Range(0, deck.Count);
+            temp = deck[randomIndex];
+            deck[randomIndex] = deck[i];
+            deck[i] = temp;
 
         }
     }
@@ -71,28 +85,37 @@ public class Dealer : MonoBehaviour
             }
         }
     }
-    public void CommunityPull()
+    public static void CommunityPull()
     {
-        if(communityCards[0]==null)
+        if (communityCards[0] == null)
         {
+            Debug.LogWarning("Flop betting round!");
             communityCards[0] = Pull();
             communityCards[1] = Pull();
             communityCards[2] = Pull();
             if (OnCommunityUpdate != null)
                 OnCommunityUpdate();
+
+            dealerRef.StartCoroutine(dealerRef.BettingRound());
         }
-        else if(communityCards[3] == null)
+        else if (communityCards[3] == null)
         {
+            Debug.LogWarning("Turn betting round!");
             communityCards[3] = Pull();
             if (OnCommunityUpdate != null)
                 OnCommunityUpdate();
+
+            dealerRef.StartCoroutine(dealerRef.BettingRound());
         }
         else
         {
+            Debug.LogWarning("River betting round! Last Round!");
+            finalBettingRound = true;
             communityCards[4] = Pull();
             if (OnCommunityUpdate != null)
                 OnCommunityUpdate();
-            GameManager.instance.DeclareWinner();
+
+            dealerRef.StartCoroutine(dealerRef.BettingRound());
         }
     }
     void SetCardSprite(Card card)
@@ -113,11 +136,115 @@ public class Dealer : MonoBehaviour
     }
     public static Card Pull()
     {
-        Card drawnCard = dealerRef.cards[0];
-        dealerRef.cards.RemoveAt(0);
+        Card drawnCard = deck[0];
+        deck.RemoveAt(0);
         return drawnCard;
     }
+    public static void AddBet(int bet)
+    {
+        pot += bet;
 
+        currentBetToMatch = currentBetToMatch > GameManager.CurrentPlayer.TotalBetThisRound ? currentBetToMatch : GameManager.CurrentPlayer.TotalBetThisRound;
+        Debug.Log("Highest bet is now: " + currentBetToMatch);
+
+        if (OnInterfaceUpdate != null)
+            OnInterfaceUpdate();
+    }
+    public static void StartBettingRound()
+    {
+        minimumBet = 5;
+        currentBetToMatch = 0;
+        bettingPlayers = new List<Player>();
+        bettingPlayers.AddRange(GameManager.players);
+        dealerRef.DebugShowBettingPlayers = bettingPlayers;
+        foreach (Player p in bettingPlayers)
+        {
+            p.OpeningBet();
+        }
+        pot = minimumBet * bettingPlayers.Count;
+        Debug.LogWarning("First betting round!");
+        dealerRef.StartCoroutine(dealerRef.BettingRound());
+    }
+    IEnumerator BettingRound()
+    {
+        ResetPlayerActions();
+        ParsePlayersStillBetting();
+        while (!AllPlayersDoneBetting() && bettingPlayers.Count > 1)
+        {
+            ResetPlayerActions();
+            foreach (Player player in bettingPlayers)
+            {
+                if (player.playStatus == PlayStatus.AllIn)
+                {
+                    Debug.Log(player.name + "is all in and cannot bet any more.");
+                    continue;
+                }
+
+                GameManager.CurrentPlayer = player;
+                Debug.Log(player.name + "'s turn: ");
+
+                if (OnInterfaceUpdate != null)
+                    OnInterfaceUpdate();
+
+                while (!player.hasChosenAction)
+                    yield return null;
+
+                ParsePlayersStillBetting();
+                if(bettingPlayers.Count == 1)
+                    break;
+            }
+            yield return null;
+        }
+
+        if (bettingPlayers.Count == 1 || finalBettingRound)
+        {
+            GameManager.DeclareWinner(bettingPlayers);
+        }
+        else
+        {
+                CommunityPull();
+        }
+    }
+
+    void ParsePlayersStillBetting()
+    {
+        List<Player> playersStillInGame = new List<Player>();
+        foreach (Player p in bettingPlayers)
+        {
+            if (p.playStatus != PlayStatus.Folded)
+                playersStillInGame.Add(p);
+        }
+        bettingPlayers = playersStillInGame;
+    }
+    void ResetPlayerActions()
+    {
+        foreach (Player p in bettingPlayers)
+        {
+            p.hasChosenAction = false;
+            p.playStatus = PlayStatus.Betting;
+        }
+    }
+    bool AllPlayersDoneBetting()
+    {
+        foreach (Player p in bettingPlayers)
+        {
+            if (p.playStatus == PlayStatus.AllIn)
+                continue;
+
+            if (p.TotalBetThisRound < currentBetToMatch)
+            {
+                Debug.Log(p + " hasn't matched the bet yet");
+                return false;
+            }
+            if(p.playStatus == PlayStatus.Betting)
+            {
+                Debug.Log(p + "is still in the betting status");
+                return false;
+            }
+
+        }
+        return true;
+    }
 
     /*Unused Methods
      * public static void AddCard(Card card)

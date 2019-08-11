@@ -9,9 +9,9 @@ public class GameManager : MonoBehaviour
     public static GameManager instance;
     public static List<Player> players;
 
-    Player currentPlayer;
+    static Player currentPlayer;
 
-    public static Player CurrentPlayer { get { return instance.currentPlayer; } }
+    public static Player CurrentPlayer { get { return currentPlayer; } set { currentPlayer = value; } }
     private void Awake()
     {
         if (instance != null)
@@ -29,25 +29,35 @@ public class GameManager : MonoBehaviour
     {
         //StartGame();
     }
-
     public void StartGame()
     {
         Dealer.StartGame();
+
         foreach (Player p in players)
             p.SetupHand();
 
+        UIManager.StartGame();
 
         if (OnDealingCards != null)
             OnDealingCards();
 
         // StartCoroutine(BettingRound());
+        Dealer.StartBettingRound();
     }
     public void Discard()
     {
         currentPlayer.Discard();
     }
-    public void DeclareWinner()
+    public static void DeclareWinner(List<Player> playersLeft)
     {
+        if(playersLeft.Count==1)
+        {
+            Debug.Log("Everyone folded, " + playersLeft[0] + " wins be default!");
+        }
+        else
+        {
+
+        
         foreach (Player p in players)
             p.SetHandStrength();
 
@@ -86,8 +96,9 @@ public class GameManager : MonoBehaviour
                     Debug.Log(p.name);
             }
         }
+        }
     }
-    List<Player> BreakTie(List<Player> tiedPlayers)
+    static List<Player> BreakTie(List<Player> tiedPlayers)
     {
         Debug.Log("Breaking tie with ranking cards");
         CardValue highestRank = tiedPlayers[0].hand.rankingCard.value;
@@ -109,7 +120,7 @@ public class GameManager : MonoBehaviour
 
         return winningPlayers;
     }
-    List<Player> BreakTieByKickers(List<Player> tiedPlayers)
+    static List<Player> BreakTieByKickers(List<Player> tiedPlayers)
     {
         Debug.Log("Breaking tie with kickers");
         CardValue highestKicker;
@@ -133,14 +144,16 @@ public class GameManager : MonoBehaviour
         }
         return winningPlayers;
     }
-    IEnumerator DiscardRound()
+    #region Deprecated
+    /*
+     * IEnumerator DiscardRound()
     {
         foreach (Player player in players)
         {
             currentPlayer = player;
             if (OnDealingCards != null)
                 OnDealingCards();
-            while (!currentPlayer.hasDiscardedCards)
+            while (!currentPlayer.hasChosenAction)
             {
                 yield return null;
             }
@@ -148,13 +161,7 @@ public class GameManager : MonoBehaviour
         }
         yield return null;
         StartCoroutine(BettingRound());
-    }
-    IEnumerator BettingRound()
-    {
-        List<Player> bettingPlayers = GameManager.players;
-
-        yield return null;
-
-
-    }
+     * 
+     */
+    #endregion
 }
