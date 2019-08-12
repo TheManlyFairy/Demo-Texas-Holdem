@@ -1,5 +1,6 @@
 ﻿using Photon.Pun;
 using Photon.Realtime;
+using System.Text;
 using UnityEngine;
 
 public class QuickStartLobbyController : MonoBehaviourPunCallbacks
@@ -22,7 +23,8 @@ public class QuickStartLobbyController : MonoBehaviourPunCallbacks
     {
         quickStartButton.SetActive(false);
         quickCancelButton.SetActive(true);
-        PhotonNetwork.JoinRandomRoom();
+        //PhotonNetwork.JoinRandomRoom();
+        CreatRoom();
         Debug.Log("QuickStart");
     }
 
@@ -36,11 +38,24 @@ public class QuickStartLobbyController : MonoBehaviourPunCallbacks
     {
         Debug.Log("Creating room now");
         int randomRoomNumber = Random.Range(1, 100);
-        RoomOptions roomOps = new RoomOptions() { IsVisible = true, IsOpen = true, MaxPlayers = (byte) roomSize};
-        PhotonNetwork.CreateRoom("Room " + randomRoomNumber, roomOps);
-        Debug.Log("Created room: " + "Room " + randomRoomNumber);
+        StringBuilder roomCode = GenerateRoomCode();
+        RoomOptions roomOps = new RoomOptions() { IsVisible = true, IsOpen = true, MaxPlayers = (byte)roomSize };
+        if (PhotonNetwork.CreateRoom("Room " + randomRoomNumber, roomOps))
+            Debug.Log("Created room: Room " + randomRoomNumber);
     }
 
+    StringBuilder GenerateRoomCode()
+    {
+        StringBuilder randomCode = new StringBuilder();
+
+        randomCode.Append(Random.Range('A', 'Z'));
+        randomCode.Append(Random.Range('A', 'Z'));
+        randomCode.Append(Random.Range('A', 'Z'));
+        randomCode.Append(Random.Range('A', 'Z'));
+
+        return randomCode;
+
+    }
     public override void OnCreateRoomFailed(short returnCode, string message)
     {
         Debug.Log("Create room FAILED");
