@@ -53,70 +53,93 @@ public class Player : MonoBehaviourPunCallbacks, IOnEventCallback
     }
     public void Raise()
     {
-        hasChosenAction = true;
-        /*if(money + totalAmountBetThisRound > Dealer.HighestBetMade)
+        if (photonView.IsMine)
         {
-            //Debug.Log("Betting " + amountToBet);
+            hasChosenAction = true;
+            playStatus = PlayStatus.Checked;
+            if (amountToBet < Dealer.MinimumBet)
+                amountToBet = Dealer.HighestBetMade + Dealer.MinimumBet;
+            else
+                amountToBet += Dealer.HighestBetMade - totalAmountBetThisRound;
+
+            if (amountToBet == money)
+            {
+                Debug.Log(name + " IS GOING ALL IN WITH " + amountToBet + "!");
+            }
+            else
+            {
+                Debug.Log(name + " raised the stakes by " + (amountToBet - Dealer.HighestBetMade - totalAmountBetThisRound));
+            }
             totalAmountBetThisRound += amountToBet;
             money -= amountToBet;
-            Dealer.AddBet(amountToBet);
-        }
-        else
-        {
-            totalAmountBetThisRound += money;
-            amountToBet = money;
-            Debug.Log(name+ "IS GOING ALL IN WITH " + amountToBet+"!");
-            Dealer.AddBet(money);
-            money = 0;
-            playStatus = PlayStatus.AllIn;
-        }*/
-        if (amountToBet < Dealer.MinimumBet)
-            amountToBet = Dealer.HighestBetMade + Dealer.MinimumBet;
-        else
-            amountToBet += Dealer.HighestBetMade - totalAmountBetThisRound;
 
-        if (amountToBet == money)
-        {
-            Debug.Log(name + " IS GOING ALL IN WITH " + amountToBet + "!");
+            object[] data = new object[] { playStatus, amountToBet };
+            RaiseEventOptions eventOptions = new RaiseEventOptions() { Receivers = ReceiverGroup.MasterClient };
+            SendOptions sendOptions = new SendOptions { Reliability = false };
+
+            PhotonNetwork.RaiseEvent((byte)EventCodes.PlayerRaise, data, eventOptions, sendOptions);
+
+            //Dealer.AddBet(amountToBet);
         }
-        else
-        {
-            Debug.Log(name + " raised the stakes by " + (amountToBet - Dealer.HighestBetMade - totalAmountBetThisRound));
-        }
-        totalAmountBetThisRound += amountToBet;
-        money -= amountToBet;
-        Dealer.AddBet(amountToBet);
+
     }
     public void Call()
     {
-        hasChosenAction = true;
-        if(amountToBet+money < Dealer.HighestBetMade)
+        if (photonView.IsMine)
         {
-            amountToBet = money;
-            playStatus = PlayStatus.AllIn;
-        }
-        else
-        {
-            amountToBet = Dealer.HighestBetMade - TotalBetThisRound;
-            playStatus = PlayStatus.Checked;
-        }
-        totalAmountBetThisRound += amountToBet;
-        Dealer.AddBet(amountToBet);
-        money -= amountToBet;
+            hasChosenAction = true;
+            if (amountToBet + money < Dealer.HighestBetMade)
+            {
+                amountToBet = money;
+                playStatus = PlayStatus.AllIn;
+            }
+            else
+            {
+                amountToBet = Dealer.HighestBetMade - TotalBetThisRound;
+                playStatus = PlayStatus.Checked;
+            }
+            totalAmountBetThisRound += amountToBet;
+            Dealer.AddBet(amountToBet);
+            money -= amountToBet;
 
-        Debug.Log(name + " added " + amountToBet + " and called");
+            object[] data = new object[] { playStatus, amountToBet };
+            RaiseEventOptions eventOptions = new RaiseEventOptions() { Receivers = ReceiverGroup.MasterClient };
+            SendOptions sendOptions = new SendOptions { Reliability = false };
+
+            PhotonNetwork.RaiseEvent((byte)EventCodes.PlayerCall, data, eventOptions, sendOptions);
+
+            //Debug.Log(name + " added " + amountToBet + " and called");
+        }
     }
     public void Check()
     {
-        hasChosenAction = true;
-        Debug.Log(name + " checked");
-        playStatus = PlayStatus.Checked;
+        if (photonView.IsMine)
+        {
+            hasChosenAction = true;
+            Debug.Log(name + " checked");
+            playStatus = PlayStatus.Checked;
+
+            object[] data = new object[] { playStatus };
+            RaiseEventOptions eventOptions = new RaiseEventOptions() { Receivers = ReceiverGroup.MasterClient };
+            SendOptions sendOptions = new SendOptions { Reliability = false };
+
+            PhotonNetwork.RaiseEvent((byte)EventCodes.PlayerCheck, data, eventOptions, sendOptions);
+        }
     }
     public void Fold()
     {
-        Debug.Log(name + " folded and is no longer in play");
-        hasChosenAction = true;
-        playStatus = PlayStatus.Folded;
+        if (photonView.IsMine)
+        {
+            Debug.Log(name + " folded and is no longer in play");
+            hasChosenAction = true;
+            playStatus = PlayStatus.Folded;
+
+            object[] data = new object[] { playStatus };
+            RaiseEventOptions eventOptions = new RaiseEventOptions() { Receivers = ReceiverGroup.MasterClient };
+            SendOptions sendOptions = new SendOptions { Reliability = false };
+
+            PhotonNetwork.RaiseEvent((byte)EventCodes.PlayerFold, data, eventOptions, sendOptions);
+        }
     }
     public void SetupHand()
     {
@@ -127,10 +150,6 @@ public class Player : MonoBehaviourPunCallbacks, IOnEventCallback
          Debug.Log(name + "'s ranking card value is " + hand.rankingCard.name);
          Debug.Log(name + "'s tie breakers are: ");
          foreach (Card card in hand.tieBreakerCards) { Debug.Log(card.name);  }*/
-
-    }
-    public void DebugGetCardSprite()
-    {
 
     }
     public void SetHandStrength()
@@ -150,7 +169,7 @@ public class Player : MonoBehaviourPunCallbacks, IOnEventCallback
 
             PhotonNetwork.RaiseEvent((byte)EventCodes.PlayerViewId, datas, raiseEventOptions, sendOptions);
         }
-        
+
     }
     public void OnEvent(EventData photonEvent)
     {

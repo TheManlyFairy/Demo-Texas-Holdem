@@ -161,7 +161,7 @@ public class Dealer : MonoBehaviourPun
         minimumBet = 5;
         currentBetToMatch = 0;
         bettingPlayers = new List<Player>();
-        bettingPlayers.AddRange(GameManager.players);
+        bettingPlayers.AddRange(PhotonGameManager.players);
         dealerRef.DebugShowBettingPlayers = bettingPlayers;
         foreach (Player p in bettingPlayers)
         {
@@ -182,7 +182,7 @@ public class Dealer : MonoBehaviourPun
             {
                 if (player.playStatus == PlayStatus.AllIn)
                 {
-                    Debug.Log(player.name + "is all in and cannot bet any more.");
+                    //Debug.Log(player.name + "is all in and cannot bet any more.");
                     continue;
                 }
 
@@ -192,7 +192,7 @@ public class Dealer : MonoBehaviourPun
                 if (OnInterfaceUpdate != null)
                     OnInterfaceUpdate();
 
-                while (!player.hasChosenAction)
+                while (player.playStatus==PlayStatus.Betting)
                     yield return null;
 
                 ParsePlayersStillBetting();
@@ -204,7 +204,7 @@ public class Dealer : MonoBehaviourPun
 
         if (bettingPlayers.Count == 1 || finalBettingRound)
         {
-            GameManager.DeclareWinner(bettingPlayers);
+            PhotonGameManager.DeclareWinner(bettingPlayers);
         }
         else
         {
@@ -242,11 +242,11 @@ public class Dealer : MonoBehaviourPun
                 Debug.Log(p + " hasn't matched the bet yet");
                 return false;
             }
-            if(p.playStatus == PlayStatus.Betting)
+            /*if(p.playStatus == PlayStatus.Betting)
             {
                 Debug.Log(p + "is still in the betting status");
                 return false;
-            }
+            }*/
 
         }
         return true;
@@ -277,5 +277,29 @@ public class Dealer : MonoBehaviourPun
 
         PhotonNetwork.RaiseEvent((byte)EventCodes.PlayerCards, datas, raiseEventOptions, sendOptions);
 
+    }
+
+    public void OnEvent(EventData photonEvent)
+    {
+        byte eventCode = photonEvent.Code;
+
+        switch(eventCode)
+        {
+            case (byte)EventCodes.PlayerRaise:
+            case (byte)EventCodes.PlayerCall:
+                {
+                    object[] data = (object[])photonEvent.CustomData;
+                    int betToAdd = (int)data[1];
+                    AddBet(betToAdd);
+                    GameManager.CurrentPlayer.playStatus = (PlayStatus)data[0];
+                } break;
+
+            case (byte)EventCodes.PlayerCheck:
+            case (byte)EventCodes.PlayerFold:
+                {
+                    object[] data = (object[])photonEvent.CustomData;
+                    GameManager.CurrentPlayer.playStatus = (PlayStatus)data[0];
+                } break;
+        }
     }
 }

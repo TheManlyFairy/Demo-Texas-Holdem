@@ -13,9 +13,9 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
     public static PhotonGameManager instance;
     public static List<Player> players;
 
-    Player currentPlayer;
+    //static Player currentPlayer;
 
-    public static Player CurrentPlayer { get { return instance.currentPlayer; } }
+    public static Player CurrentPlayer { get; set; }
 
     private void Awake()
     {
@@ -34,7 +34,7 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
     public void StartGame()
     {
-        currentPlayer = players[0];
+        CurrentPlayer = players[0];
 
         Dealer.StartGame();
         foreach (Player p in players)
@@ -55,8 +55,6 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
         }
         else
         {
-
-
             foreach (Player p in players)
                 p.SetHandStrength();
 
