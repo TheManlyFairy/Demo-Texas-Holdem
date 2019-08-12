@@ -56,7 +56,7 @@ public class Player : MonoBehaviourPunCallbacks, IOnEventCallback
         if (photonView.IsMine)
         {
             hasChosenAction = true;
-            playStatus = PlayStatus.Checked;
+            
             if (amountToBet < Dealer.MinimumBet)
                 amountToBet = Dealer.HighestBetMade + Dealer.MinimumBet;
             else
@@ -64,10 +64,12 @@ public class Player : MonoBehaviourPunCallbacks, IOnEventCallback
 
             if (amountToBet == money)
             {
+                playStatus = PlayStatus.AllIn;
                 Debug.Log(name + " IS GOING ALL IN WITH " + amountToBet + "!");
             }
             else
             {
+                playStatus = PlayStatus.Checked;
                 Debug.Log(name + " raised the stakes by " + (amountToBet - Dealer.HighestBetMade - totalAmountBetThisRound));
             }
             totalAmountBetThisRound += amountToBet;
