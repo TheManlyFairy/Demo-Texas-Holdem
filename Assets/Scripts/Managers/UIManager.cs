@@ -42,7 +42,7 @@ public class UIManager : MonoBehaviour
 
             if(betValue >= Dealer.MinimumBet)
             {
-                while (betValue % 5 != 0)
+                while (betValue % Dealer.MinimumBet != 0)
                     betValue--;
             }
             else

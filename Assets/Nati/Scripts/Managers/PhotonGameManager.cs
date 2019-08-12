@@ -46,52 +46,58 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
         // StartCoroutine(BettingRound());
     }
-    public void Discard()
+    
+    public static void DeclareWinner(List<Player> playersLeft)
     {
-        currentPlayer.Discard();
-    }
-    public void DeclareWinner()
-    {
-        foreach (Player p in players)
-            p.SetHandStrength();
-
-        List<Player> winners = new List<Player>();
-        Hand strongestHand = players[0].hand.strength;
-
-        foreach (Player p in players)
+        if (playersLeft.Count == 1)
         {
-            if (p.hand.strength > strongestHand)
-                strongestHand = p.hand.strength;
-        }
-
-        foreach (Player p in players)
-        {
-            if (p.hand.strength == strongestHand)
-                winners.Add(p);
-        }
-
-        if (winners.Count == 1)
-        {
-            Debug.Log(winners[0].name + " won with " + winners[0].hand.strength + " of " + winners[0].hand.rankingCard.value);
+            Debug.Log("Everyone folded, " + playersLeft[0] + " wins be default!");
         }
         else
         {
-            Debug.Log("Multiple players have " + winners[0].hand.strength);
-            winners = BreakTie(winners);
+
+
+            foreach (Player p in players)
+                p.SetHandStrength();
+
+            List<Player> winners = new List<Player>();
+            Hand strongestHand = players[0].hand.strength;
+
+            foreach (Player p in players)
+            {
+                if (p.hand.strength > strongestHand)
+                    strongestHand = p.hand.strength;
+            }
+
+            foreach (Player p in players)
+            {
+                if (p.hand.strength == strongestHand)
+                    winners.Add(p);
+            }
+
             if (winners.Count == 1)
             {
-                Debug.Log(winners[0].name + " won the tie breaker with " + winners[0].hand.strength + " of " + winners[0].hand.rankingCard.value);
+                Debug.Log(winners[0].name + " won with " + winners[0].hand.strength + " of " + winners[0].hand.rankingCard.value);
             }
             else
             {
-                Debug.Log("The following players are tied with " + winners[0].hand.strength + " of " + winners[0].hand.rankingCard.value);
+                Debug.Log("Multiple players have " + winners[0].hand.strength);
+                winners = BreakTie(winners);
+                if (winners.Count == 1)
+                {
+                    Debug.Log(winners[0].name + " won the tie breaker with " + winners[0].hand.strength + " of " + winners[0].hand.rankingCard.value);
+                }
+                else
+                {
+                    Debug.Log("The following players are tied with " + winners[0].hand.strength + " of " + winners[0].hand.rankingCard.value);
 
-                foreach (Player p in winners)
-                    Debug.Log(p.name);
+                    foreach (Player p in winners)
+                        Debug.Log(p.name);
+                }
             }
         }
     }
-    List<Player> BreakTie(List<Player> tiedPlayers)
+    static List<Player> BreakTie(List<Player> tiedPlayers)
     {
         Debug.Log("Breaking tie with ranking cards");
         CardValue highestRank = tiedPlayers[0].hand.rankingCard.value;
@@ -113,7 +119,7 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
         return winningPlayers;
     }
-    List<Player> BreakTieByKickers(List<Player> tiedPlayers)
+    static List<Player> BreakTieByKickers(List<Player> tiedPlayers)
     {
         Debug.Log("Breaking tie with kickers");
         CardValue highestKicker;
@@ -137,7 +143,7 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
         }
         return winningPlayers;
     }
-    
+
     IEnumerator BettingRound()
     {
         List<Player> bettingPlayers = GameManager.players;
@@ -178,6 +184,11 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
         }
         yield return null;
         StartCoroutine(BettingRound());
-    }*/
+    }
+    public void Discard()
+    {
+        currentPlayer.Discard();
+    }
+     */
     #endregion
 }

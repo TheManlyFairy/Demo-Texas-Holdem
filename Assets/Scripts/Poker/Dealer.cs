@@ -120,11 +120,11 @@ public class Dealer : MonoBehaviourPun
             communityCards[4] = Pull();
             if (OnCommunityUpdate != null)
                 OnCommunityUpdate();
-            PhotonGameManager.instance.DeclareWinner();
+            PhotonGameManager.DeclareWinner(bettingPlayers);
             dealerRef.StartCoroutine(dealerRef.BettingRound());
         }
     }
-   public void SetCardSprite(Card card)
+    public void SetCardSprite(Card card)
     {
         int indexer;
         if (card.value == CardValue.Ace)

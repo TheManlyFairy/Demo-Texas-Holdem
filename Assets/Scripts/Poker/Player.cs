@@ -137,7 +137,6 @@ public class Player : MonoBehaviourPunCallbacks, IOnEventCallback
     {
         hand.GetHandStrength(cards);
     }
-
     void SendViewIdToServer()
     {
         if (photonView.IsMine)
@@ -153,7 +152,6 @@ public class Player : MonoBehaviourPunCallbacks, IOnEventCallback
         }
         
     }
-
     public void OnEvent(EventData photonEvent)
     {
         byte eventCode = photonEvent.Code;
