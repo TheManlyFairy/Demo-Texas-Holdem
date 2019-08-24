@@ -573,6 +573,11 @@ PrefabInstance:
       propertyPath: quickCancelButton
       value: 
       objectReference: {fileID: 1901211162}
+    - target: {fileID: 8809999704539703628, guid: 8b255766a30ed0641b7343f74a60d391,
+        type: 3}
+      propertyPath: roomSize
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 8809999704539703629, guid: 8b255766a30ed0641b7343f74a60d391,
         type: 3}
       propertyPath: m_LocalPosition.x

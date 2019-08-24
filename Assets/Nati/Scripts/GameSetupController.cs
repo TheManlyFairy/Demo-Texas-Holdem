@@ -21,21 +21,19 @@ public class GameSetupController : MonoBehaviour
     }
 
 
-
-
-    void CreatePlayer()
-    {
-
-        Debug.Log("Creating Player");
-        PhotonNetwork.Instantiate(playerPrefab.name, playerButtonsContainer.position, Quaternion.identity);
-
-
-    }
-
     void CreatePlayerButton()
     {
         Debug.Log("Creating Player Button");
         GameObject tempButton = PhotonNetwork.Instantiate(playerButtonPrefab.name, playerButtonsContainer.position, Quaternion.identity);
         tempButton.transform.parent = playerButtonsContainer;
     }
+
+    // Not used, Player created only in Client app
+    void CreatePlayer()
+    {
+        Debug.Log("Creating Player");
+        PhotonNetwork.Instantiate(playerPrefab.name, playerButtonsContainer.position, Quaternion.identity);
+    }
+
+
 }

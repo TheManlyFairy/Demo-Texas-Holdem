@@ -45,6 +45,7 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
             OnDealingCards();
 
         // StartCoroutine(BettingRound());
+        Dealer.StartBettingRound();
     }
     
     public static void DeclareWinner(List<Player> playersLeft)
@@ -75,7 +76,7 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
             if (winners.Count == 1)
             {
-                Debug.Log(winners[0].name + " won with " + winners[0].hand.strength + " of " + winners[0].hand.rankingCard.value);
+                Debug.Log(winners[0].name + "(ViewId " + winners[0].photonView.ViewID + ") won with " + winners[0].hand.strength + " of " + winners[0].hand.rankingCard.value);
             }
             else
             {

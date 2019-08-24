@@ -24,17 +24,18 @@ public class QuickStartLobbyController : MonoBehaviourPunCallbacks
         quickStartButton.SetActive(false);
         quickCancelButton.SetActive(true);
         //PhotonNetwork.JoinRandomRoom();
-        CreatRoom();
+        CreateRoom();
         Debug.Log("QuickStart");
     }
-
+    /*
     public override void OnJoinRandomFailed(short returnCode, string message)
     {
         Debug.Log("Failed to join room");
         CreatRoom();
     }
+    */
 
-    void CreatRoom()
+    void CreateRoom()
     {
         Debug.Log("Creating room now");
         int randomRoomNumber = Random.Range(1, 100);
@@ -59,7 +60,7 @@ public class QuickStartLobbyController : MonoBehaviourPunCallbacks
     public override void OnCreateRoomFailed(short returnCode, string message)
     {
         Debug.Log("Create room FAILED");
-        CreatRoom();
+        CreateRoom();
     }
 
     public void QuickCancel()

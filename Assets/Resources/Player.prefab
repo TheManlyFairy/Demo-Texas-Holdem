@@ -45,7 +45,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cards: []
-  hasDiscardedCards: 0
+  money: 300
+  hasChosenAction: 0
   playStatus: 0
 --- !u!114 &5647364944554049604
 MonoBehaviour:

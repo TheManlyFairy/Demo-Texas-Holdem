@@ -31,13 +31,13 @@ public class UIManager : MonoBehaviour
     
     void SetupUIListeners()
     {
-        GameManager.OnDealingCards += UpdatePlayerDisplay;
+        PhotonGameManager.OnDealingCards += UpdatePlayerDisplay;
         Dealer.OnInterfaceUpdate += UpdateGameInterface;
         Dealer.OnInterfaceUpdate += UpdatePlayerDisplay;
         betValueSlider.onValueChanged.AddListener(delegate
         {
             int sliderMinimum = Dealer.MinimumBet;
-            int sliderMaximum = GameManager.CurrentPlayer.money;
+            int sliderMaximum = PhotonGameManager.CurrentPlayer.money;
             int betValue = (int)(betValueSlider.value * sliderMaximum);
 
             if(betValue >= Dealer.MinimumBet)
@@ -49,43 +49,43 @@ public class UIManager : MonoBehaviour
             {
                 betValue = Dealer.MinimumBet;
             }
-            GameManager.CurrentPlayer.AmountToBet = betValue;
+            PhotonGameManager.CurrentPlayer.AmountToBet = betValue;
             betValueField.text = "" + betValue;
         });
         raiseBet.onClick.AddListener(delegate
         {
-            GameManager.CurrentPlayer.Raise();
+            PhotonGameManager.CurrentPlayer.Raise();
             betValueSlider.value = 0;
         });
         callBet.onClick.AddListener(delegate
         {
-            GameManager.CurrentPlayer.Call();
+            PhotonGameManager.CurrentPlayer.Call();
             betValueSlider.value = 0;
         });
         check.onClick.AddListener(delegate
         {
-            GameManager.CurrentPlayer.Check();
+            PhotonGameManager.CurrentPlayer.Check();
             betValueSlider.value = 0;
         });
         fold.onClick.AddListener(delegate
         {
-            GameManager.CurrentPlayer.Fold();
+            PhotonGameManager.CurrentPlayer.Fold();
             betValueSlider.value = 0;
         });
         PhotonGameManager.OnDealingCards += UpdatePlayerDisplay;
     }
     void UpdateGameInterface()
     {
-        playerMoney.text = "Cash: " + GameManager.CurrentPlayer.money;
+        playerMoney.text = "Cash: " + PhotonGameManager.CurrentPlayer.money;
         currentPot.text = "Total Cash Prize: " + Dealer.Pot;
     }
     void UpdatePlayerDisplay()
     {
-        playerHandDisplay.SetupPlayerHand(GameManager.CurrentPlayer);
-        playerName.text = GameManager.CurrentPlayer.name;
-        playerMoney.text = "Cash: " + GameManager.CurrentPlayer.money;
+        playerHandDisplay.SetupPlayerHand(PhotonGameManager.CurrentPlayer);
+        playerName.text = PhotonGameManager.CurrentPlayer.name;
+        playerMoney.text = "Cash: " + PhotonGameManager.CurrentPlayer.money;
 
-        if(GameManager.CurrentPlayer.TotalBetThisRound<Dealer.HighestBetMade)
+        if(PhotonGameManager.CurrentPlayer.TotalBetThisRound<Dealer.HighestBetMade)
         {
             callBet.gameObject.SetActive(true);
             check.gameObject.SetActive(false);
@@ -100,10 +100,10 @@ public class UIManager : MonoBehaviour
     }
     public void DebugShowPlayer(int index)
     {
-        playerMoney.text = "Cash: " + GameManager.players[index].money;
+        playerMoney.text = "Cash: " + PhotonGameManager.players[index].money;
         currentPot.text = "Total Cash Prize: " + Dealer.Pot;
-        playerHandDisplay.SetupPlayerHand(GameManager.players[index]);
-        playerName.text = GameManager.players[index].name;
+        playerHandDisplay.SetupPlayerHand(PhotonGameManager.players[index]);
+        playerName.text = PhotonGameManager.players[index].name;
         playerHandDisplay.SetupPlayerHand(PhotonGameManager.players[index]);
         playerName.text = PhotonGameManager.players[index].name;
     }

@@ -86,7 +86,6 @@ public class Dealer : MonoBehaviourPun
             foreach (Player p in PhotonGameManager.players)
             {
                 p.Draw();
-               // if(p.photonView.IsMine)
                 UpdateNetworkPlayers(p,i);
             }
         }
@@ -150,7 +149,7 @@ public class Dealer : MonoBehaviourPun
     {
         pot += bet;
 
-        currentBetToMatch = currentBetToMatch > GameManager.CurrentPlayer.TotalBetThisRound ? currentBetToMatch : GameManager.CurrentPlayer.TotalBetThisRound;
+        currentBetToMatch = currentBetToMatch > PhotonGameManager.CurrentPlayer.TotalBetThisRound ? currentBetToMatch : PhotonGameManager.CurrentPlayer.TotalBetThisRound;
         Debug.Log("Highest bet is now: " + currentBetToMatch);
 
         if (OnInterfaceUpdate != null)
@@ -166,6 +165,7 @@ public class Dealer : MonoBehaviourPun
         foreach (Player p in bettingPlayers)
         {
             p.OpeningBet();
+            p.UpdatePlayerMoney(-minimumBet);
         }
         pot = minimumBet * bettingPlayers.Count;
         Debug.LogWarning("First betting round!");
@@ -186,7 +186,8 @@ public class Dealer : MonoBehaviourPun
                     continue;
                 }
 
-                GameManager.CurrentPlayer = player;
+                PhotonGameManager.CurrentPlayer = player;
+                PhotonGameManager.CurrentPlayer.PlayerTurnUpdate();
                 Debug.Log(player.name + "'s turn: ");
 
                 if (OnInterfaceUpdate != null)
@@ -262,12 +263,13 @@ public class Dealer : MonoBehaviourPun
 
     }*/
 
+        // Sends player's cards to player's cliet app.
     void UpdateNetworkPlayers(Player player,int cardIndex)
     {
        CardValue tempCardValue =  player.cards[cardIndex].value;
        CardSuit tempCardSuit = player.cards[cardIndex].suit;
 
-        object[] datas = new object[] { tempCardValue,tempCardSuit };
+        object[] datas = new object[] { player.photonView.ViewID, tempCardValue,tempCardSuit };
         RaiseEventOptions raiseEventOptions = new RaiseEventOptions()
         {
             Receivers = ReceiverGroup.Others,
@@ -291,14 +293,14 @@ public class Dealer : MonoBehaviourPun
                     object[] data = (object[])photonEvent.CustomData;
                     int betToAdd = (int)data[1];
                     AddBet(betToAdd);
-                    GameManager.CurrentPlayer.playStatus = (PlayStatus)data[0];
+                    PhotonGameManager.CurrentPlayer.playStatus = (PlayStatus)data[0];
                 } break;
 
             case (byte)EventCodes.PlayerCheck:
             case (byte)EventCodes.PlayerFold:
                 {
                     object[] data = (object[])photonEvent.CustomData;
-                    GameManager.CurrentPlayer.playStatus = (PlayStatus)data[0];
+                    PhotonGameManager.CurrentPlayer.playStatus = (PlayStatus)data[0];
                 } break;
         }
     }

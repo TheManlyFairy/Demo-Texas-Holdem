@@ -171,8 +171,35 @@ public class Player : MonoBehaviourPunCallbacks, IOnEventCallback
 
             PhotonNetwork.RaiseEvent((byte)EventCodes.PlayerViewId, datas, raiseEventOptions, sendOptions);
         }
+    }
+
+    public void UpdatePlayerMoney(int amount)
+    {
+        object[] datas = new object[] { amount };
+        RaiseEventOptions raiseEventOptions = new RaiseEventOptions()
+        {
+            Receivers = ReceiverGroup.Others,
+            CachingOption = EventCaching.DoNotCache
+        };
+        SendOptions sendOptions = new SendOptions() { Reliability = false };
+
+        PhotonNetwork.RaiseEvent((byte)EventCodes.PlayerBet, datas, raiseEventOptions, sendOptions);
 
     }
+
+    public void PlayerTurnUpdate()
+    {
+        object[] datas = new object[] { true };
+        RaiseEventOptions raiseEventOptions = new RaiseEventOptions()
+        {
+            Receivers = ReceiverGroup.Others,
+            CachingOption = EventCaching.DoNotCache
+        };
+        SendOptions sendOptions = new SendOptions() { Reliability = false };
+
+        PhotonNetwork.RaiseEvent((byte)EventCodes.PlayerTurn, datas, raiseEventOptions, sendOptions);
+    }
+
     public void OnEvent(EventData photonEvent)
     {
         byte eventCode = photonEvent.Code;
@@ -180,15 +207,20 @@ public class Player : MonoBehaviourPunCallbacks, IOnEventCallback
         if (eventCode == (byte)EventCodes.PlayerCards && photonView.IsMine)
         {
             object[] data = (object[])photonEvent.CustomData;
-            Card newCard;
-            CardValue value = (CardValue)data[0];
-            newCard = ScriptableObject.CreateInstance<Card>();
-            newCard.name = value + " of " + (CardSuit)data[1];
-            newCard.value = value;
-            newCard.suit = (CardSuit)data[1];
-            Dealer.dealerRef.SetCardSprite(newCard);
-            cards.Add(newCard);
-            Debug.Log("Player " + this.photonView.ViewID + " Recieved card " + (CardValue)data[0] + " of " + (CardSuit)data[1]);
+            CreateLocalPlayerCard(data);
         }
+    }
+
+    void CreateLocalPlayerCard( object[] data)
+    {
+        Card newCard;
+        CardValue value = (CardValue)data[0];
+        newCard = ScriptableObject.CreateInstance<Card>();
+        newCard.name = value + " of " + (CardSuit)data[1];
+        newCard.value = value;
+        newCard.suit = (CardSuit)data[1];
+        Dealer.dealerRef.SetCardSprite(newCard);
+        cards.Add(newCard);
+        Debug.Log("Player " + this.photonView.ViewID + " Recieved card " + (CardValue)data[0] + " of " + (CardSuit)data[1]);
     }
 }
