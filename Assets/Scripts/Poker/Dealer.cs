@@ -243,11 +243,11 @@ public class Dealer : MonoBehaviourPun
                 Debug.Log(p + " hasn't matched the bet yet");
                 return false;
             }
-            /*if(p.playStatus == PlayStatus.Betting)
+            if(p.playStatus == PlayStatus.Betting)
             {
                 Debug.Log(p + "is still in the betting status");
                 return false;
-            }*/
+            }
 
         }
         return true;

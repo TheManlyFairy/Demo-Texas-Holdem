@@ -17,7 +17,7 @@ public class GameSetupController : MonoBehaviour
         roomName.text = PhotonNetwork.CurrentRoom.Name;
         //CreatePlayer();
        // PhotonGameManager.instance.FindPlayers();
-        CreatePlayerButton();
+        //CreatePlayerButton();
     }
 
 
@@ -29,11 +29,11 @@ public class GameSetupController : MonoBehaviour
     }
 
     // Not used, Player created only in Client app
-    void CreatePlayer()
+    /*void CreatePlayer()
     {
         Debug.Log("Creating Player");
         PhotonNetwork.Instantiate(playerPrefab.name, playerButtonsContainer.position, Quaternion.identity);
-    }
+    }*/
 
 
 }
