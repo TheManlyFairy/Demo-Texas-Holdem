@@ -17,6 +17,16 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
     public static Player CurrentPlayer { get; set; }
 
+    private void OnEnable()
+    {
+        PhotonNetwork.AddCallbackTarget(this);
+    }
+
+    private void OnDisable()
+    {
+        PhotonNetwork.RemoveCallbackTarget(this);
+    }
+
     private void Awake()
     {
         if (instance != null)

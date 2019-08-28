@@ -22,6 +22,17 @@ public class Player : MonoBehaviourPunCallbacks, IOnEventCallback
     public int AmountToBet { set { amountToBet = value; } }
     public int TotalBetThisRound { get { return totalAmountBetThisRound; } }
     #endregion
+
+    private void OnEnable()
+    {
+        PhotonNetwork.AddCallbackTarget(this);
+    }
+
+    private void OnDisable()
+    {
+        PhotonNetwork.RemoveCallbackTarget(this);
+    }
+
     private void Start()
     {
         hand = new TexasPokerHand();
@@ -53,8 +64,8 @@ public class Player : MonoBehaviourPunCallbacks, IOnEventCallback
     }
     public void Raise()
     {
-        if (photonView.IsMine)
-        {
+       // if (photonView.IsMine)
+       // {
             hasChosenAction = true;
             
             if (amountToBet < Dealer.MinimumBet)
@@ -82,7 +93,7 @@ public class Player : MonoBehaviourPunCallbacks, IOnEventCallback
             PhotonNetwork.RaiseEvent((byte)EventCodes.PlayerRaise, data, eventOptions, sendOptions);
 
             //Dealer.AddBet(amountToBet);
-        }
+      //  }
 
     }
     public void Call()
