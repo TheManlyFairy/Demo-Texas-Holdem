@@ -9,7 +9,7 @@ public class GameSetupController : MonoBehaviour
 {
     [SerializeField] GameObject playerPrefab;
     [SerializeField] GameObject playerButtonPrefab;
-    [SerializeField] Transform playerButtonsContainer;
+   // [SerializeField] Transform playerButtonsContainer;
     [SerializeField] Text roomName;
 
     void Start()
@@ -24,8 +24,8 @@ public class GameSetupController : MonoBehaviour
     void CreatePlayerButton()
     {
         Debug.Log("Creating Player Button");
-        GameObject tempButton = PhotonNetwork.Instantiate(playerButtonPrefab.name, playerButtonsContainer.position, Quaternion.identity);
-        tempButton.transform.parent = playerButtonsContainer;
+        GameObject tempButton = PhotonNetwork.Instantiate(playerButtonPrefab.name, Vector3.zero, Quaternion.identity);
+       // tempButton.transform.parent = playerButtonsContainer;
     }
 
     // Not used, Player created only in Client app

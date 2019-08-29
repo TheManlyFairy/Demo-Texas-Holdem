@@ -37,6 +37,7 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
         {
             instance = this;
             players = new List<Player>();
+            
             // players = FindObjectsOfType<Player>().ToList();
            //  currentPlayer = players[0];
         }
