@@ -7,7 +7,7 @@ using Photon.Realtime;
 using ExitGames.Client.Photon;
 using Photon.Pun;
 
-public class Dealer : MonoBehaviourPun
+public class Dealer : MonoBehaviourPunCallbacks, IOnEventCallback
 {
     #region Variables
     public static event CommunityCardsUpdate OnCommunityUpdate;
@@ -96,7 +96,7 @@ public class Dealer : MonoBehaviourPun
             foreach (Player p in PhotonGameManager.players)
             {
                 p.Draw();
-                UpdateNetworkPlayers(p,i);
+                UpdateNetworkPlayers(p, i);
             }
         }
     }
@@ -207,18 +207,14 @@ public class Dealer : MonoBehaviourPun
 
                 if (OnInterfaceUpdate != null)
                     OnInterfaceUpdate();
-                /*
+
                 while (player.playStatus == PlayStatus.Betting)
-                { 
-                    Debug.Log("Stuck in a loop?");
+                {
+                    //Debug.Log("Stuck in a loop?");
                     yield return null;
                 }
-                */
-                
-                
-
                 ParsePlayersStillBetting();
-                if(bettingPlayers.Count == 1)
+                if (bettingPlayers.Count == 1)
                     break;
             }
             yield return null;
@@ -230,7 +226,7 @@ public class Dealer : MonoBehaviourPun
         }
         else
         {
-                CommunityPull();
+            CommunityPull();
         }
     }
 
@@ -264,7 +260,7 @@ public class Dealer : MonoBehaviourPun
                 Debug.Log(p + " hasn't matched the bet yet");
                 return false;
             }
-            if(p.playStatus == PlayStatus.Betting)
+            if (p.playStatus == PlayStatus.Betting)
             {
                 Debug.Log(p.photonView.ViewID + " is still in the betting status");
                 return false;
@@ -286,12 +282,12 @@ public class Dealer : MonoBehaviourPun
 
     #region Raise Events
     // Sends player's cards to player's cliet app.
-    void UpdateNetworkPlayers(Player player,int cardIndex)
+    void UpdateNetworkPlayers(Player player, int cardIndex)
     {
-       CardValue tempCardValue =  player.cards[cardIndex].value;
-       CardSuit tempCardSuit = player.cards[cardIndex].suit;
+        CardValue tempCardValue = player.cards[cardIndex].value;
+        CardSuit tempCardSuit = player.cards[cardIndex].suit;
 
-        object[] datas = new object[] { player.photonView.ViewID, tempCardValue,tempCardSuit };
+        object[] datas = new object[] { player.photonView.ViewID, tempCardValue, tempCardSuit };
         RaiseEventOptions raiseEventOptions = new RaiseEventOptions()
         {
             Receivers = ReceiverGroup.Others,
@@ -305,7 +301,7 @@ public class Dealer : MonoBehaviourPun
 
     static void UpdateClientDealer()
     {
-        object[] datas = new object[] { minimumBet,currentBetToMatch,pot };
+        object[] datas = new object[] { minimumBet, currentBetToMatch, pot };
         RaiseEventOptions raiseEventOptions = new RaiseEventOptions()
         {
             Receivers = ReceiverGroup.Others,
@@ -320,7 +316,7 @@ public class Dealer : MonoBehaviourPun
     {
         byte eventCode = photonEvent.Code;
 
-        switch(eventCode)
+        switch (eventCode)
         {
             case (byte)EventCodes.PlayerRaise:
                 {
@@ -328,7 +324,7 @@ public class Dealer : MonoBehaviourPun
                     int betToAdd = (int)data[1];
                     AddBet(betToAdd);
                     PhotonGameManager.CurrentPlayer.playStatus = (PlayStatus)data[0];
-                    Debug.Log("A player raised bet by " + betToAdd);
+                    Debug.Log(PhotonGameManager.CurrentPlayer.photonView.ViewID+" raised by " + betToAdd);
 
                 }
                 break;
@@ -338,12 +334,15 @@ public class Dealer : MonoBehaviourPun
                     int betToAdd = (int)data[1];
                     AddBet(betToAdd);
                     PhotonGameManager.CurrentPlayer.playStatus = (PlayStatus)data[0];
-                } break;
+                    Debug.Log(PhotonGameManager.CurrentPlayer.photonView.ViewID + " has called");
+                }
+                break;
 
             case (byte)EventCodes.PlayerCheck:
                 {
                     object[] data = (object[])photonEvent.CustomData;
                     PhotonGameManager.CurrentPlayer.playStatus = (PlayStatus)data[0];
+                    Debug.Log(PhotonGameManager.CurrentPlayer.photonView.ViewID + " has checked");
                 }
                 break;
 
@@ -351,7 +350,9 @@ public class Dealer : MonoBehaviourPun
                 {
                     object[] data = (object[])photonEvent.CustomData;
                     PhotonGameManager.CurrentPlayer.playStatus = (PlayStatus)data[0];
-                } break;
+                    Debug.Log(PhotonGameManager.CurrentPlayer.photonView.ViewID + " has folded");
+                }
+                break;
         }
     }
     #endregion
