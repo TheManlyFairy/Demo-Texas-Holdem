@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-public class PlayerDisplay : MonoBehaviour
+using Photon.Pun;
+
+public class PlayerDisplay : MonoBehaviourPun
 {
     [SerializeField]
     Image playerIcon;
@@ -14,7 +16,7 @@ public class PlayerDisplay : MonoBehaviour
     public void SetupPlayer(Player player)
     {
         //Assign player icon here
-        playerName.text = player.name;
+        playerName.text = player.photonView.ViewID + "";
         playerRemainingMoney.text = "$" + player.money;
         playerTotalBet.text = "$0";
     }

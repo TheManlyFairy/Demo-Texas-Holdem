@@ -10,6 +10,7 @@ public class UIManager : MonoBehaviour
     public Text playerMoney;
     public Text playerCurrentBet;
     public Text currentPot;
+    public List<PlayerDisplay> playerSits;
     //public Slider betValueSlider;
     //public InputField betValueField;
     //public Button raiseBet;
@@ -17,7 +18,8 @@ public class UIManager : MonoBehaviour
     //public Button check;
     //public Button fold;
 
-    static UIManager instance;
+
+   public static UIManager instance;
 
 
     private void Start()
@@ -106,5 +108,10 @@ public class UIManager : MonoBehaviour
         playerName.text = PhotonGameManager.players[index].name;
       //  playerHandDisplay.SetupPlayerHand(PhotonGameManager.players[index]);
         playerName.text = PhotonGameManager.players[index].name;
+    }
+
+    public void UpdatePot()
+    {
+        currentPot.text = Dealer.Pot + " $";
     }
 }

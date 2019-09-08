@@ -158,7 +158,7 @@ public class Dealer : MonoBehaviourPunCallbacks, IOnEventCallback
     public static void AddBet(int bet)
     {
         pot += bet;
-
+        UIManager.instance.UpdatePot();
         currentBetToMatch = currentBetToMatch > PhotonGameManager.CurrentPlayer.TotalBetThisRound ? currentBetToMatch : PhotonGameManager.CurrentPlayer.TotalBetThisRound;
         Debug.Log("Highest bet is now: " + currentBetToMatch);
 
@@ -176,9 +176,10 @@ public class Dealer : MonoBehaviourPunCallbacks, IOnEventCallback
         foreach (Player p in bettingPlayers)
         {
             p.OpeningBet();
-            p.UpdatePlayerMoney(-minimumBet);
         }
+        UpdatePlayerMoney(-minimumBet);
         pot = minimumBet * bettingPlayers.Count;
+        UIManager.instance.UpdatePot();
         UpdateClientDealer();
         Debug.LogWarning("First betting round!");
         dealerRef.StartCoroutine(dealerRef.BettingRound());
@@ -299,6 +300,20 @@ public class Dealer : MonoBehaviourPunCallbacks, IOnEventCallback
 
     }
 
+    static void UpdatePlayerMoney(int amount)
+    {
+        object[] datas = new object[] { amount };
+        RaiseEventOptions raiseEventOptions = new RaiseEventOptions()
+        {
+            Receivers = ReceiverGroup.Others,
+            CachingOption = EventCaching.DoNotCache
+        };
+        SendOptions sendOptions = new SendOptions() { Reliability = false };
+
+        PhotonNetwork.RaiseEvent((byte)EventCodes.PlayerBet, datas, raiseEventOptions, sendOptions);
+
+    }
+
     static void UpdateClientDealer()
     {
         object[] datas = new object[] { minimumBet, currentBetToMatch, pot };
@@ -323,7 +338,9 @@ public class Dealer : MonoBehaviourPunCallbacks, IOnEventCallback
                     object[] data = (object[])photonEvent.CustomData;
                     int betToAdd = (int)data[1];
                     AddBet(betToAdd);
+                    PhotonGameManager.CurrentPlayer.money -= betToAdd;
                     PhotonGameManager.CurrentPlayer.playStatus = (PlayStatus)data[0];
+                    PhotonGameManager.CurrentPlayer.playerSit.UpdatePlayerMoney(betToAdd, PhotonGameManager.CurrentPlayer.money);
                     Debug.Log(PhotonGameManager.CurrentPlayer.photonView.ViewID+" raised by " + betToAdd);
 
                 }
@@ -333,7 +350,9 @@ public class Dealer : MonoBehaviourPunCallbacks, IOnEventCallback
                     object[] data = (object[])photonEvent.CustomData;
                     int betToAdd = (int)data[1];
                     AddBet(betToAdd);
+                    PhotonGameManager.CurrentPlayer.money -= betToAdd;
                     PhotonGameManager.CurrentPlayer.playStatus = (PlayStatus)data[0];
+                    PhotonGameManager.CurrentPlayer.playerSit.UpdatePlayerMoney(betToAdd, PhotonGameManager.CurrentPlayer.money);
                     Debug.Log(PhotonGameManager.CurrentPlayer.photonView.ViewID + " has called");
                 }
                 break;
