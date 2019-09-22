@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/Store Front Page.unity
+    guid: 0de96279ab9473244a6791a8b64ebd25
+  - enabled: 1
     path: Assets/Nati/Scenes/QuickStartLobby.unity
     guid: 6d36f259fd95fc14dad04b276fa63094
   - enabled: 1
