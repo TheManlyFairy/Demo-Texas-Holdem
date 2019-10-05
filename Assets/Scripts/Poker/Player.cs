@@ -17,7 +17,7 @@ public class Player : MonoBehaviourPunCallbacks, IOnEventCallback
     public PlayStatus playStatus;
     public PlayerDisplay playerSit;
 
-    int totalAmountBetThisRound = 0;
+   public int totalAmountBetThisRound = 0;
     int amountToBet = 0;
     #region Properties
     public int AmountToBet { set { amountToBet = value; } }

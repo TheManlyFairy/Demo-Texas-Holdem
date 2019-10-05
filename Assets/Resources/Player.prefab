@@ -49,6 +49,7 @@ MonoBehaviour:
   hasChosenAction: 0
   playStatus: 0
   playerSit: {fileID: 0}
+  totalAmountBetThisRound: 0
 --- !u!114 &5647364944554049604
 MonoBehaviour:
   m_ObjectHideFlags: 0

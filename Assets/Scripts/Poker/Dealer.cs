@@ -158,8 +158,11 @@ public class Dealer : MonoBehaviourPunCallbacks, IOnEventCallback
     public static void AddBet(int bet)
     {
         pot += bet;
-        UIManager.instance.UpdatePot();
+
+        PhotonGameManager.CurrentPlayer.totalAmountBetThisRound = bet;
         currentBetToMatch = currentBetToMatch > PhotonGameManager.CurrentPlayer.TotalBetThisRound ? currentBetToMatch : PhotonGameManager.CurrentPlayer.TotalBetThisRound;
+        UpdateClientDealer();
+        UIManager.instance.UpdatePot();
         Debug.Log("Highest bet is now: " + currentBetToMatch);
 
         if (OnInterfaceUpdate != null)
@@ -361,6 +364,7 @@ public class Dealer : MonoBehaviourPunCallbacks, IOnEventCallback
                 {
                     object[] data = (object[])photonEvent.CustomData;
                     PhotonGameManager.CurrentPlayer.playStatus = (PlayStatus)data[0];
+                    currentBetToMatch = 0;
                     Debug.Log(PhotonGameManager.CurrentPlayer.photonView.ViewID + " has checked");
                 }
                 break;
@@ -369,6 +373,7 @@ public class Dealer : MonoBehaviourPunCallbacks, IOnEventCallback
                 {
                     object[] data = (object[])photonEvent.CustomData;
                     PhotonGameManager.CurrentPlayer.playStatus = (PlayStatus)data[0];
+                    currentBetToMatch = 0;
                     Debug.Log(PhotonGameManager.CurrentPlayer.photonView.ViewID + " has folded");
                 }
                 break;
