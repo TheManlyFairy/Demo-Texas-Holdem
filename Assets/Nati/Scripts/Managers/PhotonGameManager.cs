@@ -171,6 +171,7 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
         {
             object[] data = (object[]) photonEvent.CustomData;
             Player temp = PhotonView.Find((int)data[0]).gameObject.GetComponent<Player>();
+            temp.name = (string) data[1];
 
             players.Add(temp);
             foreach(PlayerDisplay playerDisplay in UIManager.instance.playerSits)

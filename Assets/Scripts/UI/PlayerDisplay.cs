@@ -16,7 +16,8 @@ public class PlayerDisplay : MonoBehaviourPun
     public void SetupPlayer(Player player)
     {
         //Assign player icon here
-        playerName.text = player.photonView.ViewID + "";
+        // playerName.text = player.photonView.ViewID + "";
+        playerName.text = player.name;
         playerRemainingMoney.text = "$" + player.money;
         playerTotalBet.text = "$0";
     }
