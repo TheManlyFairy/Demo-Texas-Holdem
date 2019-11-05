@@ -9,7 +9,7 @@ using ExitGames.Client.Photon;
 
 public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
 {
-    public static event DealingCardsEvent OnDealingCards;
+    //public static event DealingCardsEvent OnDealingCards;
     public static PhotonGameManager instance;
     public static List<Player> players;
 
@@ -52,8 +52,8 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
             p.SetupHand();
 
 
-        if (OnDealingCards != null)
-            OnDealingCards();
+        //if (OnDealingCards != null)
+            //OnDealingCards();
 
         // StartCoroutine(BettingRound());
         Dealer.StartBettingRound();
@@ -64,6 +64,8 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
         if (playersLeft.Count == 1)
         {
             Debug.Log("Everyone folded, " + playersLeft[0] + " wins be default!");
+            UIManager.DeclareWinner(playersLeft);
+            Dealer.GiveWinnersEarnings(playersLeft.Select(players => players.photonView.ViewID).ToArray());
         }
         else
         {
@@ -87,7 +89,8 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
             if (winners.Count == 1)
             {
-                Debug.Log(winners[0].name + "(ViewId " + winners[0].photonView.ViewID + ") won with " + winners[0].hand.strength + " of " + winners[0].hand.rankingCard.value);
+                Debug.Log(winners[0].name + " won with " + winners[0].hand.strength + " of " + winners[0].hand.rankingCard.value);
+
             }
             else
             {
@@ -105,6 +108,8 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
                         Debug.Log(p.name);
                 }
             }
+            UIManager.DeclareWinner(winners);
+            Dealer.GiveWinnersEarnings(winners.Select(players => players.photonView.ViewID).ToArray());
         }
     }
     static List<Player> BreakTie(List<Player> tiedPlayers)
@@ -174,11 +179,11 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
             temp.name = (string) data[1];
 
             players.Add(temp);
-            foreach(PlayerDisplay playerDisplay in UIManager.instance.playerSits)
+            foreach(PlayerDisplay playerDisplay in UIManager.instance.playerSeats)
             {
                 if (!playerDisplay.gameObject.activeSelf)
                 {
-                    temp.playerSit = playerDisplay;
+                    temp.playerSeat = playerDisplay;
                     playerDisplay.SetupPlayer(temp);
                     playerDisplay.gameObject.SetActive(true);
                     break;

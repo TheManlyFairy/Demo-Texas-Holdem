@@ -2,36 +2,81 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 public class UIManager : MonoBehaviour
 {
+    public static UIManager instance;
     public Text playerName;
     //public PlayerHandDisplay playerHandDisplay;
     public CommunityHandDisplay communityHandDisplay;
     public Text playerMoney;
     public Text playerCurrentBet;
     public Text currentPot;
-    public List<PlayerDisplay> playerSits;
-    //public Slider betValueSlider;
+    public List<PlayerDisplay> playerSeats;
+    public Button NextRound, RestartGame, QuitGame;
+    public GameObject winnerDisplay;
+    public TextMeshProUGUI winnerText;
+    /*Unused Variables
+     * //public Slider betValueSlider;
     //public InputField betValueField;
     //public Button raiseBet;
     //public Button callBet;
     //public Button check;
-    //public Button fold;
-
-
-   public static UIManager instance;
-
+    //public Button fold;*/
 
     private void Start()
     {
         instance = this;
+
+        NextRound.onClick.AddListener(delegate { Dealer.StartNextRound(); });
+        RestartGame.onClick.AddListener(delegate { PhotonGameManager.instance.StartGame(); });
+        QuitGame.onClick.AddListener(delegate { Application.Quit(); });
     }
     public static void StartGame()
     {
-      //  instance.SetupUIListeners();
+        //  instance.SetupUIListeners();
     }
-    
-    //void SetupUIListeners()
+
+    public static void DeclareWinner(List<Player> winners)
+    {
+        if (winners.Count == 1)
+        {
+            instance.winnerText.text = winners[0].name + " wins!";
+        }
+        else
+        {
+            instance.winnerText.text = "Tied!";
+        }
+        instance.winnerDisplay.SetActive(true);
+    }
+
+    void UpdateGameInterface()
+    {
+        playerMoney.text = "Cash: " + PhotonGameManager.CurrentPlayer.money;
+        currentPot.text = "Total Cash Prize: " + Dealer.Pot + " $";
+    }
+    void UpdatePlayerDisplay()
+    {
+        playerName.text = PhotonGameManager.CurrentPlayer.name;
+        playerMoney.text = "Cash: " + PhotonGameManager.CurrentPlayer.money;
+        playerName.text = PhotonGameManager.CurrentPlayer.name;
+    }
+    public void DebugShowPlayer(int index)
+    {
+        playerMoney.text = "Cash: " + PhotonGameManager.players[index].money;
+        currentPot.text = "Total Cash Prize: " + Dealer.Pot;
+        // playerHandDisplay.SetupPlayerHand(PhotonGameManager.players[index]);
+        playerName.text = PhotonGameManager.players[index].name;
+        //  playerHandDisplay.SetupPlayerHand(PhotonGameManager.players[index]);
+        playerName.text = PhotonGameManager.players[index].name;
+    }
+
+    public void UpdatePot()
+    {
+        currentPot.text = Dealer.Pot + " $";
+    }
+    /* Unused Methods
+    * //void SetupUIListeners()
     //{
     //    PhotonGameManager.OnDealingCards += UpdatePlayerDisplay;
     //    Dealer.OnInterfaceUpdate += UpdateGameInterface;
@@ -75,43 +120,5 @@ public class UIManager : MonoBehaviour
     //        betValueSlider.value = 0;
     //    });
     //    PhotonGameManager.OnDealingCards += UpdatePlayerDisplay;
-    //}
-    void UpdateGameInterface()
-    {
-        playerMoney.text = "Cash: " + PhotonGameManager.CurrentPlayer.money;
-        currentPot.text = "Total Cash Prize: " + Dealer.Pot + " $";
-    }
-    void UpdatePlayerDisplay()
-    {
-       // playerHandDisplay.SetupPlayerHand(PhotonGameManager.CurrentPlayer);
-        playerName.text = PhotonGameManager.CurrentPlayer.name;
-        playerMoney.text = "Cash: " + PhotonGameManager.CurrentPlayer.money;
-
-        //if(PhotonGameManager.CurrentPlayer.TotalBetThisRound<Dealer.HighestBetMade)
-        //{
-        //    callBet.gameObject.SetActive(true);
-        //    check.gameObject.SetActive(false);
-        //}
-        //else
-        //{
-        //    callBet.gameObject.SetActive(false);
-        //    check.gameObject.SetActive(true);
-        //}
-        //playerHandDisplay.SetupPlayerHand(PhotonGameManager.CurrentPlayer);
-        playerName.text = PhotonGameManager.CurrentPlayer.name;
-    }
-    public void DebugShowPlayer(int index)
-    {
-        playerMoney.text = "Cash: " + PhotonGameManager.players[index].money;
-        currentPot.text = "Total Cash Prize: " + Dealer.Pot;
-       // playerHandDisplay.SetupPlayerHand(PhotonGameManager.players[index]);
-        playerName.text = PhotonGameManager.players[index].name;
-      //  playerHandDisplay.SetupPlayerHand(PhotonGameManager.players[index]);
-        playerName.text = PhotonGameManager.players[index].name;
-    }
-
-    public void UpdatePot()
-    {
-        currentPot.text = Dealer.Pot + " $";
-    }
+    //}*/
 }

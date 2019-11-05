@@ -30,7 +30,7 @@ public class QuickStartRommController : MonoBehaviourPunCallbacks
         if (PhotonNetwork.IsMasterClient)
         {
             
-            Debug.Log("Startiong Game");
+            Debug.Log("Starting Game");
             PhotonNetwork.LoadLevel(multiplayerSceneIndex);
         }
     }

@@ -45,10 +45,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cards: []
-  money: 300
+  money: 0
   hasChosenAction: 0
   playStatus: 0
-  playerSit: {fileID: 0}
+  playerSeat: {fileID: 0}
   totalAmountBetThisRound: 0
 --- !u!114 &5647364944554049604
 MonoBehaviour:

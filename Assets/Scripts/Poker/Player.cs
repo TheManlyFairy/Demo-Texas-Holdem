@@ -12,10 +12,10 @@ public class Player : MonoBehaviourPunCallbacks, IOnEventCallback
 {
     public List<Card> cards = new List<Card>();
     public TexasPokerHand hand;
-    public int money = 300;
+    public int money;
     public bool hasChosenAction = false;
     public PlayStatus playStatus;
-    public PlayerDisplay playerSit;
+    public PlayerDisplay playerSeat;
 
    public int totalAmountBetThisRound = 0;
     int amountToBet = 0;
@@ -86,7 +86,7 @@ public class Player : MonoBehaviourPunCallbacks, IOnEventCallback
             }
             totalAmountBetThisRound += amountToBet;
             money -= amountToBet;
-        playerSit.UpdatePlayerMoney(amountToBet,money);
+        playerSeat.UpdatePlayerMoney(amountToBet,money);
             //object[] data = new object[] { playStatus, amountToBet };
             //RaiseEventOptions eventOptions = new RaiseEventOptions() { Receivers = ReceiverGroup.MasterClient };
             //SendOptions sendOptions = new SendOptions { Reliability = false };
@@ -115,7 +115,7 @@ public class Player : MonoBehaviourPunCallbacks, IOnEventCallback
             totalAmountBetThisRound += amountToBet;
             Dealer.AddBet(amountToBet);
             money -= amountToBet;
-        playerSit.UpdatePlayerMoney(amountToBet, money);
+        playerSeat.UpdatePlayerMoney(amountToBet, money);
         //object[] data = new object[] { playStatus, amountToBet };
         //RaiseEventOptions eventOptions = new RaiseEventOptions() { Receivers = ReceiverGroup.MasterClient };
         //SendOptions sendOptions = new SendOptions { Reliability = false };
@@ -219,8 +219,8 @@ public class Player : MonoBehaviourPunCallbacks, IOnEventCallback
         newCard.name = value + " of " + (CardSuit)data[1];
         newCard.value = value;
         newCard.suit = (CardSuit)data[1];
-        Dealer.dealerRef.SetCardSprite(newCard);
+        Dealer.SetCardSprite(newCard);
         cards.Add(newCard);
-        Debug.Log("Player " + this.photonView.ViewID + " Recieved card " + (CardValue)data[0] + " of " + (CardSuit)data[1]);
+        Debug.Log("Player " + name + " Recieved card " + (CardValue)data[0] + " of " + (CardSuit)data[1]);
     }
 }
