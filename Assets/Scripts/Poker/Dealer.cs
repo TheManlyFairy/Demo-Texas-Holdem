@@ -100,6 +100,13 @@ public class Dealer : MonoBehaviourPunCallbacks, IOnEventCallback
     }
     public static void StartGame()
     {
+        finalBettingRound = false;
+        InstructPlayerToDisposeCards();
+        System.Array.Clear(communityCards, 0, 5);
+        drawnCards.Clear();
+        if (OnCommunityUpdate != null)
+            OnCommunityUpdate();
+
         BuildDeck();
         ShuffleDeck();
         DealCards();
@@ -329,6 +336,7 @@ public class Dealer : MonoBehaviourPunCallbacks, IOnEventCallback
         foreach (Player player in PhotonGameManager.players)
         {
             player.cards.Clear();
+            Debug.Log("Dealer: " + player.name + " has cleared cleared his cards");
         }
 
         object[] datas = new object[] {  };
