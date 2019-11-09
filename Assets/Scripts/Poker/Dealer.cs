@@ -16,6 +16,7 @@ public class Dealer : MonoBehaviourPunCallbacks, IOnEventCallback
     public static Dealer dealerRef;
     public List<Sprite> deckSprites;
     public List<Player> DebugShowBettingPlayers;
+    [SerializeField] static bool startMoney = false;
 
     static Card[] communityCards;
     static List<Card> deck;
@@ -100,17 +101,33 @@ public class Dealer : MonoBehaviourPunCallbacks, IOnEventCallback
     }
     public static void StartGame()
     {
+        startMoney = true;
+        BuildDeck();
+        ShuffleDeck();
+        DealCards();
+    }
+
+    public void ResetTable()
+    {
+        startMoney = true;
         finalBettingRound = false;
+        deck.AddRange(drawnCards);
         InstructPlayerToDisposeCards();
         System.Array.Clear(communityCards, 0, 5);
         drawnCards.Clear();
         if (OnCommunityUpdate != null)
             OnCommunityUpdate();
 
-        BuildDeck();
         ShuffleDeck();
         DealCards();
+
+        PhotonGameManager.CurrentPlayer = PhotonGameManager.players[0];
+        foreach (Player p in PhotonGameManager.players)
+            p.SetupHand();
+
+        StartBettingRound();
     }
+
     public static void StartNextRound()
     {
         finalBettingRound = false;
@@ -206,7 +223,10 @@ public class Dealer : MonoBehaviourPunCallbacks, IOnEventCallback
         {
             p.OpeningBet();
         }
+
+        if(startMoney)
         UpdatePlayerMoney(minimumBet*100);
+
         foreach(Player player in bettingPlayers)
         {
             player.playerSeat.UpdatePlayerMoney(0, MinimumBet * 100);
@@ -335,7 +355,9 @@ public class Dealer : MonoBehaviourPunCallbacks, IOnEventCallback
     {
         foreach (Player player in PhotonGameManager.players)
         {
+            if(player.cards != null)
             player.cards.Clear();
+
             Debug.Log("Dealer: " + player.name + " has cleared cleared his cards");
         }
 
@@ -352,7 +374,7 @@ public class Dealer : MonoBehaviourPunCallbacks, IOnEventCallback
     }
     static void UpdatePlayerMoney(int amount)
     {
-        object[] datas = new object[] { amount };
+        object[] datas = new object[] { amount,startMoney };
         RaiseEventOptions raiseEventOptions = new RaiseEventOptions()
         {
             Receivers = ReceiverGroup.Others,
@@ -361,6 +383,9 @@ public class Dealer : MonoBehaviourPunCallbacks, IOnEventCallback
         SendOptions sendOptions = new SendOptions() { Reliability = false };
 
         PhotonNetwork.RaiseEvent((byte)EventCodes.PlayerBet, datas, raiseEventOptions, sendOptions);
+
+        if (startMoney)
+            startMoney = false;
     }
     static void UpdateClientDealer()
     {
@@ -394,18 +419,20 @@ public class Dealer : MonoBehaviourPunCallbacks, IOnEventCallback
             case (byte)EventCodes.PlayerRaise:
                 {
                     object[] data = (object[])photonEvent.CustomData;
+
                     int betToAdd = (int)data[1];
                     AddBet(betToAdd);
                     PhotonGameManager.CurrentPlayer.money -= betToAdd;
                     PhotonGameManager.CurrentPlayer.playStatus = (PlayStatus)data[0];
                     PhotonGameManager.CurrentPlayer.playerSeat.UpdatePlayerMoney(betToAdd, PhotonGameManager.CurrentPlayer.money);
-                    Debug.Log(PhotonGameManager.CurrentPlayer.name+" raised by " + betToAdd);
-
+                    Debug.Log(PhotonGameManager.CurrentPlayer.name + " raised by " + betToAdd);
                 }
                 break;
+
             case (byte)EventCodes.PlayerCall:
                 {
                     object[] data = (object[])photonEvent.CustomData;
+
                     int betToAdd = (int)data[1];
                     AddBet(betToAdd);
                     PhotonGameManager.CurrentPlayer.money -= betToAdd;
@@ -418,15 +445,18 @@ public class Dealer : MonoBehaviourPunCallbacks, IOnEventCallback
             case (byte)EventCodes.PlayerCheck:
                 {
                     object[] data = (object[])photonEvent.CustomData;
+
                     PhotonGameManager.CurrentPlayer.playStatus = (PlayStatus)data[0];
                     currentBetToMatch = 0;
                     Debug.Log(PhotonGameManager.CurrentPlayer.name + " has checked");
+
                 }
                 break;
 
             case (byte)EventCodes.PlayerFold:
                 {
                     object[] data = (object[])photonEvent.CustomData;
+
                     PhotonGameManager.CurrentPlayer.playStatus = (PlayStatus)data[0];
                     currentBetToMatch = 0;
                     Debug.Log(PhotonGameManager.CurrentPlayer.name + " has folded");

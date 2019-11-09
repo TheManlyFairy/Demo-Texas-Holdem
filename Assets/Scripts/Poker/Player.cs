@@ -189,7 +189,7 @@ public class Player : MonoBehaviourPunCallbacks, IOnEventCallback
 
     public void PlayerTurnUpdate()
     {
-        object[] datas = new object[] { true };
+        object[] datas = new object[] { true,photonView.ViewID };
         RaiseEventOptions raiseEventOptions = new RaiseEventOptions()
         {
             Receivers = ReceiverGroup.Others,

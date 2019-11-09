@@ -29,7 +29,7 @@ public class UIManager : MonoBehaviour
         instance = this;
 
         NextRound.onClick.AddListener(delegate { Dealer.StartNextRound(); });
-        RestartGame.onClick.AddListener(delegate { PhotonGameManager.instance.StartGame(); });
+        RestartGame.onClick.AddListener(delegate { Dealer.dealerRef.ResetTable(); });
         QuitGame.onClick.AddListener(delegate { Application.Quit(); });
     }
     public static void StartGame()
