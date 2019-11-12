@@ -11,7 +11,8 @@ namespace Utilities
     public enum EventCodes
     {
         PlayerViewId, PlayerCards, PlayerRaise, PlayerCall,
-        PlayerCheck, PlayerFold, PlayerBet, PlayerTurn, ClientDealer, ClearPlayerCards, GrantPlayerMoney
+        PlayerCheck, PlayerFold, UpdateAllPlayerMoney, UpdateCurrentPlayerMoney,
+        PlayerTurn, ClientDealer, ClearPlayerCards, GrantWinnerMoney
     }
 
     public delegate void DealingCardsEvent();

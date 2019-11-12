@@ -37,9 +37,9 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
         {
             instance = this;
             players = new List<Player>();
-            
+
             // players = FindObjectsOfType<Player>().ToList();
-           //  currentPlayer = players[0];
+            //  currentPlayer = players[0];
         }
     }
 
@@ -53,12 +53,12 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
 
         //if (OnDealingCards != null)
-            //OnDealingCards();
+        //OnDealingCards();
 
         // StartCoroutine(BettingRound());
         Dealer.StartBettingRound();
     }
-    
+
     public static void DeclareWinner(List<Player> playersLeft)
     {
         if (playersLeft.Count == 1)
@@ -172,14 +172,14 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
     {
         byte eventCode = photonEvent.Code;
 
-        if(eventCode == (byte)EventCodes.PlayerViewId)
+        /*if (eventCode == (byte)EventCodes.PlayerViewId)
         {
-            object[] data = (object[]) photonEvent.CustomData;
+            object[] data = (object[])photonEvent.CustomData;
             Player temp = PhotonView.Find((int)data[0]).gameObject.GetComponent<Player>();
-            temp.name = (string) data[1];
+            temp.name = (string)data[1];
 
             players.Add(temp);
-            foreach(PlayerDisplay playerDisplay in UIManager.instance.playerSeats)
+            foreach (PlayerDisplay playerDisplay in UIManager.instance.playerSeats)
             {
                 if (!playerDisplay.gameObject.activeSelf)
                 {
@@ -188,12 +188,78 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
                     playerDisplay.gameObject.SetActive(true);
                     break;
                 }
-                else if(playerDisplay.gameObject.activeSelf)
+                else if (playerDisplay.gameObject.activeSelf)
                 {
                     continue;
                 }
             }
             Debug.Log("Players found: " + players.Count);
+        }*/
+
+        switch (eventCode)
+        {
+            case (byte)EventCodes.PlayerViewId:
+                {
+                    object[] data = (object[])photonEvent.CustomData;
+                    Player temp = PhotonView.Find((int)data[0]).gameObject.GetComponent<Player>();
+                    temp.name = (string)data[1];
+
+                    players.Add(temp);
+                    foreach (PlayerDisplay playerDisplay in UIManager.instance.playerSeats)
+                    {
+                        if (!playerDisplay.gameObject.activeSelf)
+                        {
+                            temp.playerSeat = playerDisplay;
+                            playerDisplay.SetupPlayer(temp);
+                            playerDisplay.gameObject.SetActive(true);
+                            break;
+                        }
+                        else if (playerDisplay.gameObject.activeSelf)
+                        {
+                            continue;
+                        }
+                    }
+                    Debug.Log("Players found: " + players.Count);
+                }
+                break;
+            case (byte)EventCodes.PlayerRaise:
+                {
+                    object[] data = (object[])photonEvent.CustomData;
+
+                    int betToAdd = (int)data[0];
+                    CurrentPlayer.Raise(betToAdd);
+                    Dealer.AddBet(CurrentPlayer.AmountToBet);
+                    Debug.Log(CurrentPlayer.name + " raised by " + betToAdd);
+                }
+                break;
+
+            case (byte)EventCodes.PlayerCall:
+                {
+                    object[] data = (object[])photonEvent.CustomData;
+
+                    //AddBet(betToAdd);
+                    CurrentPlayer.Call();
+                    Dealer.AddBet(CurrentPlayer.AmountToBet);
+                    Debug.Log(CurrentPlayer.name + " has called");
+                }
+                break;
+
+            case (byte)EventCodes.PlayerCheck:
+                {
+                    object[] data = (object[])photonEvent.CustomData;
+                    CurrentPlayer.Check();
+                    Debug.Log(CurrentPlayer.name + " has checked");
+
+                }
+                break;
+
+            case (byte)EventCodes.PlayerFold:
+                {
+                    object[] data = (object[])photonEvent.CustomData;
+                    CurrentPlayer.Fold();
+                    Debug.Log(CurrentPlayer.name + " has folded");
+                }
+                break;
         }
     }
 

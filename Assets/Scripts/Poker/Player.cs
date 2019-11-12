@@ -8,7 +8,7 @@ using Photon.Pun;
 using Photon.Realtime;
 using ExitGames.Client.Photon;
 
-public class Player : MonoBehaviourPunCallbacks, IOnEventCallback
+public class Player : MonoBehaviourPunCallbacks//, IOnEventCallback
 {
     public List<Card> cards = new List<Card>();
     public TexasPokerHand hand;
@@ -17,10 +17,10 @@ public class Player : MonoBehaviourPunCallbacks, IOnEventCallback
     public PlayStatus playStatus;
     public PlayerDisplay playerSeat;
 
-   public int totalAmountBetThisRound = 0;
+    public int totalAmountBetThisRound = 0;
     int amountToBet = 0;
     #region Properties
-    public int AmountToBet { set { amountToBet = value; } }
+    public int AmountToBet { get { return amountToBet; } set { amountToBet = value; } }
     public int TotalBetThisRound { get { return totalAmountBetThisRound; } }
     #endregion
 
@@ -40,120 +40,80 @@ public class Player : MonoBehaviourPunCallbacks, IOnEventCallback
         playStatus = PlayStatus.Betting;
         //DebugShowPlayerHand();
 
-      //  SendViewIdToServer();
+        //  SendViewIdToServer();
     }
     public void Draw()
     {
         Card card = Dealer.Pull();
         cards.Add(card);
     }
-    public void Discard()
-    {
-        cards = cards.Where(card => !card.markedForDiscard).ToList();
-
-        while (cards.Count < 5)
-        {
-            Draw();
-        }
-
-        SetupHand();
-        hasChosenAction = true;
-    }
+    
     public void OpeningBet()
     {
         money -= Dealer.MinimumBet;
+        totalAmountBetThisRound = Dealer.MinimumBet;
     }
-    public void Raise()
+    public void Raise(int amountToRaise)
     {
-       // if (photonView.IsMine)
-       // {
-            hasChosenAction = true;
-            
-            if (amountToBet < Dealer.MinimumBet)
-                amountToBet = Dealer.HighestBetMade + Dealer.MinimumBet;
-            else
-                amountToBet += Dealer.HighestBetMade - totalAmountBetThisRound;
+        hasChosenAction = true;
+        
+        int minimumRequiredRaise = Dealer.HighestBetMade - TotalBetThisRound + Dealer.MinimumBet;
 
-            if (amountToBet == money)
-            {
-                playStatus = PlayStatus.AllIn;
-                Debug.Log(name + " IS GOING ALL IN WITH " + amountToBet + "!");
-            }
-            else
-            {
-                playStatus = PlayStatus.Checked;
-                Debug.Log(name + " raised the stakes by " + (amountToBet - Dealer.HighestBetMade - totalAmountBetThisRound));
-            }
-            totalAmountBetThisRound += amountToBet;
-            money -= amountToBet;
-        playerSeat.UpdatePlayerMoney(amountToBet,money);
-            //object[] data = new object[] { playStatus, amountToBet };
-            //RaiseEventOptions eventOptions = new RaiseEventOptions() { Receivers = ReceiverGroup.MasterClient };
-            //SendOptions sendOptions = new SendOptions { Reliability = false };
+        //if the first player at the beginning of the game selects to raise, the highestBeMade and TotalBetThisRound are equal, so minimum bet is doubled
+        if (minimumRequiredRaise == Dealer.MinimumBet)
+            minimumRequiredRaise *= 2;
 
-            //PhotonNetwork.RaiseEvent((byte)EventCodes.PlayerRaise, data, eventOptions, sendOptions);
+        //if the first player at the beginning of the game selects to raise and didnt move his raise slider, the amountToRaise is sent as 0;
+        if (amountToRaise < minimumRequiredRaise)
+            amountToRaise = minimumRequiredRaise;
 
-            //Dealer.AddBet(amountToBet);
-      //  }
-
+        if (amountToRaise == money)
+        {
+            playStatus = PlayStatus.AllIn;
+            Debug.Log(name + " IS GOING ALL IN WITH " + amountToRaise + "!");
+        }
+        else
+        {
+            Debug.Log(name + " raised the stakes by " + amountToRaise);
+        }
+        totalAmountBetThisRound += amountToRaise;
+        money -= amountToRaise;
+        amountToBet = amountToRaise;
+        playerSeat.UpdatePlayerMoney(amountToBet, money);
+        UpdateClientMoney();
     }
     public void Call()
     {
-       // if (photonView.IsMine)
-      //  {
-            hasChosenAction = true;
-            if (amountToBet + money < Dealer.HighestBetMade)
-            {
-                amountToBet = money;
-                playStatus = PlayStatus.AllIn;
-            }
-            else
-            {
-                amountToBet = Dealer.HighestBetMade - TotalBetThisRound;
-                playStatus = PlayStatus.Checked;
-            }
-            totalAmountBetThisRound += amountToBet;
-            Dealer.AddBet(amountToBet);
+        hasChosenAction = true;
+
+        if(Dealer.HighestBetMade >= money+totalAmountBetThisRound)
+        {
+            amountToBet = money;
+            totalAmountBetThisRound += money;
+            money = 0;
+            playStatus = PlayStatus.AllIn;
+            Debug.Log(name + "IS GOING ALL IN");
+        }
+        else
+        {
+            amountToBet = Dealer.HighestBetMade - totalAmountBetThisRound;
             money -= amountToBet;
+            totalAmountBetThisRound += amountToBet;
+        }
         playerSeat.UpdatePlayerMoney(amountToBet, money);
-        //object[] data = new object[] { playStatus, amountToBet };
-        //RaiseEventOptions eventOptions = new RaiseEventOptions() { Receivers = ReceiverGroup.MasterClient };
-        //SendOptions sendOptions = new SendOptions { Reliability = false };
-
-        //PhotonNetwork.RaiseEvent((byte)EventCodes.PlayerCall, data, eventOptions, sendOptions);
-
-        //Debug.Log(name + " added " + amountToBet + " and called");
-        // }
+        UpdateClientMoney();
     }
     public void Check()
     {
-      //  if (photonView.IsMine)
-      //  {
-            hasChosenAction = true;
-            Debug.Log(name + " checked");
-            playStatus = PlayStatus.Checked;
-
-            //object[] data = new object[] { playStatus };
-            //RaiseEventOptions eventOptions = new RaiseEventOptions() { Receivers = ReceiverGroup.MasterClient };
-            //SendOptions sendOptions = new SendOptions { Reliability = false };
-
-            //PhotonNetwork.RaiseEvent((byte)EventCodes.PlayerCheck, data, eventOptions, sendOptions);
-        //}
+        hasChosenAction = true;
+        Debug.Log(name + " checked");
+        playStatus = PlayStatus.Checked;
     }
     public void Fold()
     {
-      //  if (photonView.IsMine)
-     //   {
-            Debug.Log(name + " folded and is no longer in play");
-            hasChosenAction = true;
-            playStatus = PlayStatus.Folded;
-
-            //object[] data = new object[] { playStatus };
-            //RaiseEventOptions eventOptions = new RaiseEventOptions() { Receivers = ReceiverGroup.MasterClient };
-            //SendOptions sendOptions = new SendOptions { Reliability = false };
-
-            //PhotonNetwork.RaiseEvent((byte)EventCodes.PlayerFold, data, eventOptions, sendOptions);
-      //  }
+        Debug.Log(name + " folded and is no longer in play");
+        hasChosenAction = true;
+        playStatus = PlayStatus.Folded;
     }
     public void SetupHand()
     {
@@ -170,7 +130,47 @@ public class Player : MonoBehaviourPunCallbacks, IOnEventCallback
     {
         hand.GetHandStrength(cards);
     }
-    //void SendViewIdToServer()
+    
+    void UpdateClientMoney()
+    {
+        object[] datas = new object[] { photonView.ViewID, money, totalAmountBetThisRound  };
+        RaiseEventOptions raiseEventOptions = new RaiseEventOptions()
+        {
+            Receivers = ReceiverGroup.Others,
+            CachingOption = EventCaching.DoNotCache
+        };
+        SendOptions sendOptions = new SendOptions() { Reliability = false };
+
+        PhotonNetwork.RaiseEvent((byte)EventCodes.UpdateCurrentPlayerMoney, datas, raiseEventOptions, sendOptions);
+    }
+    public void PlayerTurnUpdate()
+    {
+        object[] datas = new object[] { true, photonView.ViewID };
+        RaiseEventOptions raiseEventOptions = new RaiseEventOptions()
+        {
+            Receivers = ReceiverGroup.Others,
+            CachingOption = EventCaching.DoNotCache
+        };
+        SendOptions sendOptions = new SendOptions() { Reliability = false };
+
+        PhotonNetwork.RaiseEvent((byte)EventCodes.PlayerTurn, datas, raiseEventOptions, sendOptions);
+    }
+
+    void CreateLocalPlayerCard(object[] data)
+    {
+        Card newCard;
+        CardValue value = (CardValue)data[0];
+        newCard = ScriptableObject.CreateInstance<Card>();
+        newCard.name = value + " of " + (CardSuit)data[1];
+        newCard.value = value;
+        newCard.suit = (CardSuit)data[1];
+        Dealer.SetCardSprite(newCard);
+        cards.Add(newCard);
+        Debug.Log("Player " + name + " Recieved card " + (CardValue)data[0] + " of " + (CardSuit)data[1]);
+    }
+
+    /* Unused Code
+     * //void SendViewIdToServer()
     //{
     //    if (photonView.IsMine)
     //    {
@@ -184,43 +184,26 @@ public class Player : MonoBehaviourPunCallbacks, IOnEventCallback
     //        PhotonNetwork.RaiseEvent((byte)EventCodes.PlayerViewId, datas, raiseEventOptions, sendOptions);
     //    }
     //}
+     * public void OnEvent(EventData photonEvent)
+     {
+         byte eventCode = photonEvent.Code;
 
-    
+         //if (eventCode == (byte)EventCodes.PlayerCards && photonView.IsMine)
+         //{
+         //    object[] data = (object[])photonEvent.CustomData;
+         //    CreateLocalPlayerCard(data);
+         //}
+     }
+     public void Discard()
+     {
+         cards = cards.Where(card => !card.markedForDiscard).ToList();
 
-    public void PlayerTurnUpdate()
-    {
-        object[] datas = new object[] { true,photonView.ViewID };
-        RaiseEventOptions raiseEventOptions = new RaiseEventOptions()
-        {
-            Receivers = ReceiverGroup.Others,
-            CachingOption = EventCaching.DoNotCache
-        };
-        SendOptions sendOptions = new SendOptions() { Reliability = false };
+         while (cards.Count < 5)
+         {
+             Draw();
+         }
 
-        PhotonNetwork.RaiseEvent((byte)EventCodes.PlayerTurn, datas, raiseEventOptions, sendOptions);
-    }
-
-    public void OnEvent(EventData photonEvent)
-    {
-        byte eventCode = photonEvent.Code;
-
-        //if (eventCode == (byte)EventCodes.PlayerCards && photonView.IsMine)
-        //{
-        //    object[] data = (object[])photonEvent.CustomData;
-        //    CreateLocalPlayerCard(data);
-        //}
-    }
-
-    void CreateLocalPlayerCard( object[] data)
-    {
-        Card newCard;
-        CardValue value = (CardValue)data[0];
-        newCard = ScriptableObject.CreateInstance<Card>();
-        newCard.name = value + " of " + (CardSuit)data[1];
-        newCard.value = value;
-        newCard.suit = (CardSuit)data[1];
-        Dealer.SetCardSprite(newCard);
-        cards.Add(newCard);
-        Debug.Log("Player " + name + " Recieved card " + (CardValue)data[0] + " of " + (CardSuit)data[1]);
-    }
+         SetupHand();
+         hasChosenAction = true;
+     }*/
 }

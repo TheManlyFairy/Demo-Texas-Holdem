@@ -44,10 +44,6 @@ public class GameManager : MonoBehaviour
         // StartCoroutine(BettingRound());
         Dealer.StartBettingRound();
     }
-    public void Discard()
-    {
-        currentPlayer.Discard();
-    }
     public static void DeclareWinner(List<Player> playersLeft)
     {
         if(playersLeft.Count==1)
