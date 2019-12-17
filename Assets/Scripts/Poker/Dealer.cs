@@ -21,11 +21,12 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
     static Card[] communityCards;
     static List<Card> deck;
     static List<Card> drawnCards;
-    static int minimumBet=5;
+    static int minimumBet = 5;
     static int currentBetToMatch;
     static int pot = 0;
     static bool finalBettingRound;
     #endregion
+
     #region Properties
     public static Card[] CommunityCards { get { return communityCards; } }
     public static int HighestBetMade { get { return currentBetToMatch; } }
@@ -33,8 +34,8 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
     public static int MinimumBet { get { return minimumBet; } set { minimumBet = value; } }
 
     #endregion
-    //List<Player> players;
 
+    #region Startup Methods
     private void OnEnable()
     {
         PhotonNetwork.AddCallbackTarget(this);
@@ -50,7 +51,22 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
         dealerRef = this;
         finalBettingRound = false;
     }
-    
+    public static void SetCardSprite(Card card)
+    {
+        int indexer;
+        if (card.value == CardValue.Ace)
+        {
+            indexer = (int)card.suit * 13;
+            card.sprite = dealerRef.deckSprites[(int)card.suit * 13];
+        }
+
+        else
+        {
+            indexer = (int)card.suit * 13 + (int)card.value - 1;
+            card.sprite = dealerRef.deckSprites[(int)card.suit * 13 + (int)card.value - 1];
+        }
+
+    }
     static void BuildDeck()
     {
         deck = new List<Card>();
@@ -85,8 +101,8 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
             temp = deck[randomIndex];
             deck[randomIndex] = deck[i];
             deck[i] = temp;
-
         }
+        AudioManager.PlayShuffle();
     }
     static void DealCards()
     {
@@ -96,6 +112,7 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
             {
                 p.Draw();
                 dealerRef.UpdateNetworkPlayers(p, i);
+                AudioManager.PlayCardPull();
             }
         }
     }
@@ -108,42 +125,15 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
         ShuffleDeck();
         DealCards();
     }
+    #endregion
 
-    public void ResetTable()
+    #region Main Gameplay
+    public static Card Pull()
     {
-        startMoney = true;
-        finalBettingRound = false;
-        deck.AddRange(drawnCards);
-        InstructPlayerToDisposeCards();
-        System.Array.Clear(communityCards, 0, 5);
-        drawnCards.Clear();
-        if (OnCommunityUpdate != null)
-            OnCommunityUpdate();
-
-        ShuffleDeck();
-        DealCards();
-
-        PhotonGameManager.CurrentPlayer = PhotonGameManager.players[0];
-        foreach (Player p in PhotonGameManager.players)
-            p.SetupHand();
-
-        StartBettingRound();
-    }
-
-    public static void StartNextRound()
-    {
-        startMoney = false;
-        finalBettingRound = false;
-        deck.AddRange(drawnCards);
-        InstructPlayerToDisposeCards();
-        System.Array.Clear(communityCards,0,5);
-        drawnCards.Clear();
-        if (OnCommunityUpdate != null)
-            OnCommunityUpdate();
-
-        ShuffleDeck();
-        DealCards();
-        StartBettingRound();
+        Card drawnCard = deck[0];
+        drawnCards.Add(drawnCard);
+        deck.RemoveAt(0);
+        return drawnCard;
     }
     public static void CommunityPull()
     {
@@ -178,28 +168,61 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
             dealerRef.StartCoroutine(dealerRef.BettingRound());
         }
     }
-    public static void SetCardSprite(Card card)
+    public static void StartBettingRound()
     {
-        int indexer;
-        if (card.value == CardValue.Ace)
+        finalBettingRound = false;
+        pot = minimumBet * bettingPlayers.Count;
+        currentBetToMatch = minimumBet;
+        UpdateClientDealer();
+        //ResetPlayerActions();
+        //dealerRef.DebugShowBettingPlayers = bettingPlayers;
+        foreach (Player player in bettingPlayers)
         {
-            indexer = (int)card.suit * 13;
-            card.sprite = dealerRef.deckSprites[(int)card.suit * 13];
+            if (startMoney)
+                player.money = minimumBet * 100;
+            player.OpeningBet();
+            player.playerSeat.UpdatePlayerMoney(minimumBet, player.money);
         }
 
-        else
-        {
-            indexer = (int)card.suit * 13 + (int)card.value - 1;
-            card.sprite = dealerRef.deckSprites[(int)card.suit * 13 + (int)card.value - 1];
-        }
-
+        if (startMoney)
+            UpdateAllClientPlayersMoney(minimumBet * 99, minimumBet);
+        UIManager.instance.UpdatePot();
+        ParsePlayersCanStillBet();
+        Debug.LogWarning("First betting round!");
+        dealerRef.StartCoroutine(dealerRef.BettingRound());
     }
-    public static Card Pull()
+    public void ResetTable()
     {
-        Card drawnCard = deck[0];
-        drawnCards.Add(drawnCard);
-        deck.RemoveAt(0);
-        return drawnCard;
+        startMoney = true;
+        deck.AddRange(drawnCards);
+        InstructPlayerToDisposeCards();
+        System.Array.Clear(communityCards, 0, 5);
+        drawnCards.Clear();
+        if (OnCommunityUpdate != null)
+            OnCommunityUpdate();
+
+        ShuffleDeck();
+        DealCards();
+
+        PhotonGameManager.CurrentPlayer = PhotonGameManager.players[0];
+        foreach (Player p in PhotonGameManager.players)
+            p.SetupHand();
+
+        StartBettingRound();
+    }
+    public static void StartNextRound()
+    {
+        startMoney = false;
+        deck.AddRange(drawnCards);
+        InstructPlayerToDisposeCards();
+        System.Array.Clear(communityCards, 0, 5);
+        drawnCards.Clear();
+        if (OnCommunityUpdate != null)
+            OnCommunityUpdate();
+
+        ShuffleDeck();
+        DealCards();
+        StartBettingRound();
     }
     public static void AddBet(int bet)
     {
@@ -214,27 +237,6 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
         if (OnInterfaceUpdate != null)
             OnInterfaceUpdate();
     }
-    public static void StartBettingRound()
-    {
-        pot = minimumBet * bettingPlayers.Count;
-        currentBetToMatch = minimumBet;
-        UpdateClientDealer();
-
-        //dealerRef.DebugShowBettingPlayers = bettingPlayers;
-        foreach (Player player in bettingPlayers)
-        {
-            if(startMoney)
-                player.money = minimumBet * 100;
-            player.OpeningBet();
-            player.playerSeat.UpdatePlayerMoney(minimumBet, player.money);
-        }
-
-        if(startMoney)
-            UpdateAllClientPlayersMoney(minimumBet * 99, minimumBet);
-        UIManager.instance.UpdatePot();
-        Debug.LogWarning("First betting round!");
-        dealerRef.StartCoroutine(dealerRef.BettingRound());
-    }
     IEnumerator BettingRound()
     {
         ResetPlayerActions();
@@ -246,7 +248,6 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
 
             foreach (Player player in bettingPlayers)
             {
-
                 if (player.playStatus == PlayStatus.AllIn)
                 {
                     //Debug.Log(player.name + "is all in and cannot bet any more.");
@@ -267,10 +268,10 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
                 }
                 player.hasChosenAction = false;
                 ParsePlayersStillBetting();
-                if (bettingPlayers.Count == 1)
+                if (bettingPlayers.Count == 1 || AllPlayersDoneBetting())
                     break;
             }
-            
+
             yield return null;
         }
 
@@ -283,6 +284,9 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
             CommunityPull();
         }
     }
+    #endregion
+
+    #region Helper Methods
     void ParsePlayersStillBetting()
     {
         List<Player> playersStillInGame = new List<Player>();
@@ -293,7 +297,17 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
         }
         bettingPlayers = playersStillInGame;
     }
-    void ResetPlayerActions()
+    static void ParsePlayersCanStillBet()
+    {
+        List<Player> playersNotBroke = new List<Player>();
+        foreach (Player p in bettingPlayers)
+        {
+            if (p.money!=0)
+                playersNotBroke.Add(p);
+        }
+        bettingPlayers = playersNotBroke;
+    }
+    static void ResetPlayerActions()
     {
         foreach (Player p in bettingPlayers)
         {
@@ -322,6 +336,8 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
         }
         return true;
     }
+    #endregion
+
     #region Raise Events
     // Sends player's cards to player's cliet app.
     void UpdateNetworkPlayers(Player player, int cardIndex)
@@ -457,6 +473,4 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
     {
 
     }*/
-
-
 }
