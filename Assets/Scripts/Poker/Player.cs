@@ -47,7 +47,7 @@ public class Player : MonoBehaviourPunCallbacks//, IOnEventCallback
         Card card = Dealer.Pull();
         cards.Add(card);
     }
-    
+
     public void OpeningBet()
     {
         money -= Dealer.MinimumBet;
@@ -56,7 +56,7 @@ public class Player : MonoBehaviourPunCallbacks//, IOnEventCallback
     public void Raise(int amountToRaise)
     {
         hasChosenAction = true;
-        
+
         int minimumRequiredRaise = Dealer.HighestBetMade - TotalBetThisRound + Dealer.MinimumBet;
 
         //if the first player at the beginning of the game selects to raise, the highestBeMade and TotalBetThisRound are equal, so minimum bet is doubled
@@ -86,7 +86,7 @@ public class Player : MonoBehaviourPunCallbacks//, IOnEventCallback
     {
         hasChosenAction = true;
 
-        if(Dealer.HighestBetMade >= money+totalAmountBetThisRound)
+        if (Dealer.HighestBetMade >= money + totalAmountBetThisRound)
         {
             amountToBet = money;
             totalAmountBetThisRound += money;
@@ -130,10 +130,10 @@ public class Player : MonoBehaviourPunCallbacks//, IOnEventCallback
     {
         hand.GetHandStrength(cards);
     }
-    
+
     void UpdateClientMoney()
     {
-        object[] datas = new object[] { photonView.ViewID, money, totalAmountBetThisRound  };
+        object[] datas = new object[] { photonView.ViewID, money, totalAmountBetThisRound };
         RaiseEventOptions raiseEventOptions = new RaiseEventOptions()
         {
             Receivers = ReceiverGroup.Others,
