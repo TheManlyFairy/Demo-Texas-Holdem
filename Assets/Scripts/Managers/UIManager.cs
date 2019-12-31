@@ -52,13 +52,15 @@ public class UIManager : MonoBehaviour
 
     void UpdateGameInterface()
     {
-        playerMoney.text = "Cash: " + PhotonGameManager.CurrentPlayer.money;
+        string money = string.Format("{0:n}", PhotonGameManager.CurrentPlayer.money);
+        playerMoney.text = "Cash: " + money;
         currentPot.text = "Total Cash Prize: " + Dealer.Pot + " $";
     }
     void UpdatePlayerDisplay()
     {
+        string money = string.Format("{0:n}", PhotonGameManager.CurrentPlayer.money);
         playerName.text = PhotonGameManager.CurrentPlayer.name;
-        playerMoney.text = "Cash: " + PhotonGameManager.CurrentPlayer.money;
+        playerMoney.text = "Cash: " + money;
         playerName.text = PhotonGameManager.CurrentPlayer.name;
     }
     public void DebugShowPlayer(int index)
@@ -73,7 +75,8 @@ public class UIManager : MonoBehaviour
 
     public void UpdatePot()
     {
-        currentPot.text = Dealer.Pot + " $";
+        string pot = string.Format("{0:n}", Dealer.Pot);
+        currentPot.text = pot + " $";
     }
     /* Unused Methods
     * //void SetupUIListeners()

@@ -12,7 +12,7 @@ namespace Utilities
     {
         PlayerViewId, PlayerCards, PlayerRaise, PlayerCall,
         PlayerCheck, PlayerFold, UpdateAllPlayerMoney, UpdateCurrentPlayerMoney,
-        PlayerTurn, ClientDealer, ClearPlayerCards, GrantWinnerMoney
+        PlayerTurn, ClientDealer, ClearPlayerCards, GrantWinnerMoney, ServerDisconnected
     }
 
     public delegate void DealingCardsEvent();

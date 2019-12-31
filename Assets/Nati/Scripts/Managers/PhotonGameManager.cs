@@ -172,30 +172,6 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
     {
         byte eventCode = photonEvent.Code;
 
-        /*if (eventCode == (byte)EventCodes.PlayerViewId)
-        {
-            object[] data = (object[])photonEvent.CustomData;
-            Player temp = PhotonView.Find((int)data[0]).gameObject.GetComponent<Player>();
-            temp.name = (string)data[1];
-
-            players.Add(temp);
-            foreach (PlayerDisplay playerDisplay in UIManager.instance.playerSeats)
-            {
-                if (!playerDisplay.gameObject.activeSelf)
-                {
-                    temp.playerSeat = playerDisplay;
-                    playerDisplay.SetupPlayer(temp);
-                    playerDisplay.gameObject.SetActive(true);
-                    break;
-                }
-                else if (playerDisplay.gameObject.activeSelf)
-                {
-                    continue;
-                }
-            }
-            Debug.Log("Players found: " + players.Count);
-        }*/
-
         switch (eventCode)
         {
             case (byte)EventCodes.PlayerViewId:
@@ -262,6 +238,48 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
                 break;
         }
     }
+
+    void DisconnectPlayers()
+    {
+        object[] datas = new object[] {};
+        RaiseEventOptions raiseEventOptions = new RaiseEventOptions()
+        {
+            Receivers = ReceiverGroup.Others,
+            CachingOption = EventCaching.DoNotCache
+        };
+        SendOptions sendOptions = new SendOptions() { Reliability = false };
+
+        PhotonNetwork.RaiseEvent((byte)EventCodes.ServerDisconnected, datas, raiseEventOptions, sendOptions);
+        Debug.Log("PhotonManager: disconnect func");
+    }
+
+     IEnumerator DisconnectCor()
+    {
+        DisconnectPlayers();
+        yield return new WaitForSeconds(2);
+        PhotonNetwork.Disconnect();
+        PhotonNetwork.LoadLevel(0);
+        Debug.Log("Disconnected");
+    }
+
+    public void Disconnect()
+    {
+        StartCoroutine("DisconnectCor");
+    }
+
+   IEnumerator QuitCor()
+    {
+        DisconnectPlayers();
+        yield return new WaitForSeconds(2);
+        Application.Quit();
+    }
+
+    public void Quit()
+    {
+        StartCoroutine("QuitCor");
+    }
+
+
 
     #region Unused Methods
     /*IEnumerator DiscardRound()
