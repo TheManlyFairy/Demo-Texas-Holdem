@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using TMPro;
 public class UIManager : MonoBehaviour
 {
+    int playerIndex = 0;
     public static UIManager instance;
     public Text playerName;
     //public PlayerHandDisplay playerHandDisplay;
@@ -13,6 +14,7 @@ public class UIManager : MonoBehaviour
     public Text playerCurrentBet;
     public Text currentPot;
     public List<PlayerDisplay> playerSeats;
+    public List<PlayerDisplay> pregamePlayerDisplay;
     public Button NextRound, RestartGame, QuitGame;
     public GameObject winnerDisplay;
     public TextMeshProUGUI winnerText;
@@ -72,7 +74,28 @@ public class UIManager : MonoBehaviour
         //  playerHandDisplay.SetupPlayerHand(PhotonGameManager.players[index]);
         playerName.text = PhotonGameManager.players[index].name;
     }
-
+    public void UpdatePregamePlayers(Player newPlayer)
+    {
+        pregamePlayerDisplay[playerIndex].SetupNameOnly(newPlayer);
+        playerSeats[playerIndex].SetupPlayer(newPlayer);
+        newPlayer.playerSeat = playerSeats[playerIndex];
+        pregamePlayerDisplay[playerIndex].gameObject.SetActive(true);
+        playerIndex++;
+        /*foreach (PlayerDisplay playerDisplay in pregamePlayerDisplay)
+        {
+            if (!playerDisplay.gameObject.activeSelf)
+            {
+                newPlayer.playerSeat = playerDisplay;
+                playerDisplay.SetupPlayer(newPlayer);
+                playerDisplay.gameObject.SetActive(true);
+                break;
+            }
+            else if (playerDisplay.gameObject.activeSelf)
+            {
+                continue;
+            }
+        }*/
+    }
     public void UpdatePot()
     {
         string pot = string.Format("{0:n}", Dealer.Pot);

@@ -181,20 +181,7 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
                     temp.name = (string)data[1];
 
                     players.Add(temp);
-                    foreach (PlayerDisplay playerDisplay in UIManager.instance.playerSeats)
-                    {
-                        if (!playerDisplay.gameObject.activeSelf)
-                        {
-                            temp.playerSeat = playerDisplay;
-                            playerDisplay.SetupPlayer(temp);
-                            playerDisplay.gameObject.SetActive(true);
-                            break;
-                        }
-                        else if (playerDisplay.gameObject.activeSelf)
-                        {
-                            continue;
-                        }
-                    }
+                    UIManager.instance.UpdatePregamePlayers(temp);
                     Debug.Log("Players found: " + players.Count);
                 }
                 break;

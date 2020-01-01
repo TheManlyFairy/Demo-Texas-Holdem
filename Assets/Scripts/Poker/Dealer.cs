@@ -256,6 +256,7 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
 
                 PhotonGameManager.CurrentPlayer = player;
                 PhotonGameManager.CurrentPlayer.PlayerTurnUpdate();
+                PhotonGameManager.CurrentPlayer.playerSeat.ShowPlayerTurnMarker();
                 Debug.Log(player.name + "'s turn: ");
 
                 if (OnInterfaceUpdate != null)
@@ -267,6 +268,7 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
                     yield return null;
                 }
                 player.hasChosenAction = false;
+                PhotonGameManager.CurrentPlayer.playerSeat.HidePlayerTurnMarker();
                 ParsePlayersStillBetting();
                 if (bettingPlayers.Count == 1 || AllPlayersDoneBetting())
                     break;
