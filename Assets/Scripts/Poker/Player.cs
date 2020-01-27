@@ -59,11 +59,11 @@ public class Player : MonoBehaviourPunCallbacks//, IOnEventCallback
 
         int minimumRequiredRaise = Dealer.HighestBetMade - TotalBetThisRound + Dealer.MinimumBet;
 
-        //if the first player at the beginning of the game selects to raise, the highestBeMade and TotalBetThisRound are equal, so minimum bet is doubled
+        /*//if the first player at the beginning of the game selects to raise, the highestBeMade and TotalBetThisRound are equal, so minimum bet is doubled
         if (minimumRequiredRaise == Dealer.MinimumBet)
-            minimumRequiredRaise *= 2;
+            minimumRequiredRaise *= 2;*/
 
-        //if the first player at the beginning of the game selects to raise and didnt move his raise slider, the amountToRaise is sent as 0;
+       //if the first player at the beginning of the game selects to raise and didnt move his raise slider, the amountToRaise is sent as 0;
         if (amountToRaise < minimumRequiredRaise)
             amountToRaise = minimumRequiredRaise;
 
@@ -79,7 +79,7 @@ public class Player : MonoBehaviourPunCallbacks//, IOnEventCallback
         totalAmountBetThisRound += amountToRaise;
         money -= amountToRaise;
         amountToBet = amountToRaise;
-        playerSeat.UpdatePlayerMoney(amountToBet, money);
+        playerSeat.UpdatePlayerMoney(totalAmountBetThisRound, money);
         UpdateClientMoney();
     }
     public void Call()
@@ -100,7 +100,7 @@ public class Player : MonoBehaviourPunCallbacks//, IOnEventCallback
             money -= amountToBet;
             totalAmountBetThisRound += amountToBet;
         }
-        playerSeat.UpdatePlayerMoney(amountToBet, money);
+        playerSeat.UpdatePlayerMoney(totalAmountBetThisRound, money);
         UpdateClientMoney();
     }
     public void Check()

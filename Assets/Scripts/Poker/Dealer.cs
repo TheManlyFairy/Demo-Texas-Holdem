@@ -11,7 +11,6 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
 {
     #region Variables
     public static event CommunityCardsUpdate OnCommunityUpdate;
-    public static event InterfaceUpdate OnInterfaceUpdate;
     public static List<Player> bettingPlayers;
     public static Dealer dealerRef;
     public List<Sprite> deckSprites;
@@ -205,8 +204,13 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
         DealCards();
 
         PhotonGameManager.CurrentPlayer = PhotonGameManager.players[0];
-        foreach (Player p in PhotonGameManager.players)
-            p.SetupHand();
+        foreach (Player player in PhotonGameManager.players)
+        {
+            player.hasChosenAction = false;
+            player.playStatus = PlayStatus.Betting;
+            player.SetupHand();
+        }
+        ParsePlayersStillBetting();
 
         StartBettingRound();
     }
@@ -215,6 +219,8 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
         startMoney = false;
         deck.AddRange(drawnCards);
         InstructPlayerToDisposeCards();
+        ParsePlayersCanStillBet();
+        ResetPlayerActions();
         System.Array.Clear(communityCards, 0, 5);
         drawnCards.Clear();
         if (OnCommunityUpdate != null)
@@ -233,9 +239,6 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
         UpdateClientDealer();
         UIManager.instance.UpdatePot();
         Debug.Log("Highest bet is now: " + currentBetToMatch);
-
-        if (OnInterfaceUpdate != null)
-            OnInterfaceUpdate();
     }
     IEnumerator BettingRound()
     {
@@ -258,9 +261,6 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
                 PhotonGameManager.CurrentPlayer.PlayerTurnUpdate();
                 PhotonGameManager.CurrentPlayer.playerSeat.ShowPlayerTurnMarker();
                 Debug.Log(player.name + "'s turn: ");
-
-                if (OnInterfaceUpdate != null)
-                    OnInterfaceUpdate();
 
                 while (!player.hasChosenAction)
                 {
@@ -302,9 +302,9 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
     static void ParsePlayersCanStillBet()
     {
         List<Player> playersNotBroke = new List<Player>();
-        foreach (Player p in bettingPlayers)
+        foreach (Player p in PhotonGameManager.players)
         {
-            if (p.money!=0)
+            if (p.money != 0)
                 playersNotBroke.Add(p);
         }
         bettingPlayers = playersNotBroke;
