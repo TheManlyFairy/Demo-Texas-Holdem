@@ -111,7 +111,7 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
             {
                 p.Draw();
                 dealerRef.UpdateNetworkPlayers(p, i);
-                AudioManager.PlayCardPull();
+                //AudioManager.PlayCardPull();
             }
         }
     }
@@ -174,6 +174,7 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
         pot = minimumBet * bettingPlayers.Count;
         currentBetToMatch = minimumBet;
         UpdateClientDealer();
+        //ParsePlayersCanStillBet();
         //ResetPlayerActions();
         //dealerRef.DebugShowBettingPlayers = bettingPlayers;
         foreach (Player player in bettingPlayers)
@@ -181,13 +182,12 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
             if (startMoney)
                 player.money = minimumBet * 100;
             player.OpeningBet();
-            player.playerSeat.UpdatePlayerMoney(minimumBet, player.money);
         }
 
         if (startMoney)
             UpdateAllClientPlayersMoney(minimumBet * 99, minimumBet);
+
         UIManager.instance.UpdatePot();
-        ParsePlayersCanStillBet();
         Debug.LogWarning("First betting round!");
         dealerRef.StartCoroutine(dealerRef.BettingRound());
     }
@@ -297,6 +297,10 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
         {
             if (p.playStatus != PlayStatus.Folded)
                 playersStillInGame.Add(p);
+            else
+            {
+                p.playerSeat.GreyOutIcon();
+            }
         }
         bettingPlayers = playersStillInGame;
     }
@@ -316,6 +320,7 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
         {
             p.hasChosenAction = false;
             p.playStatus = PlayStatus.Betting;
+            p.playerSeat.BrightenIcon();
         }
     }
     bool AllPlayersDoneBetting()
@@ -374,7 +379,7 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
             if (player.cards != null)
                 player.cards.Clear();
 
-            Debug.Log("Dealer: " + player.name + " has cleared cleared his cards");
+            //Debug.Log("Dealer: " + player.name + " has cleared cleared his cards");
         }
 
         object[] datas = new object[] { };
@@ -415,9 +420,10 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
 
         PhotonNetwork.RaiseEvent((byte)EventCodes.ClientDealer, datas, raiseEventOptions, sendOptions);
     }
-    public static void GiveWinnersEarnings(int[] winnerViewIds)
+    
+    /*public static void GiveWinnersEarnings(int[] winnerViewIds)
     {
-        object[] datas = new object[] { winnerViewIds, pot };
+        object[] datas = new object[] { winnerViewIds, pot/winnerViewIds.Length };
         RaiseEventOptions raiseEventOptions = new RaiseEventOptions()
         {
             Receivers = ReceiverGroup.Others,
@@ -425,7 +431,7 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
         };
         SendOptions sendOptions = new SendOptions() { Reliability = false };
         PhotonNetwork.RaiseEvent((byte)EventCodes.GrantWinnerMoney, datas, raiseEventOptions, sendOptions);
-    }
+    }*/
     /*public void OnEvent(EventData photonEvent)
     {
         byte eventCode = photonEvent.Code;
@@ -475,13 +481,5 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
     }*/
     #endregion
 
-    /*Unused Methods
-     * public static void AddCard(Card card)
-    {
-
-    }
-    public static void RemoveCard(Card card)
-    {
-
-    }*/
+    
 }

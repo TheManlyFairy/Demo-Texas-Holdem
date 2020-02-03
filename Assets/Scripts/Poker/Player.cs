@@ -17,7 +17,7 @@ public class Player : MonoBehaviourPunCallbacks//, IOnEventCallback
     public PlayStatus playStatus;
     public PlayerDisplay playerSeat;
 
-    public int totalAmountBetThisRound = 0;
+    int totalAmountBetThisRound = 0;
     int amountToBet = 0;
     #region Properties
     public int AmountToBet { get { return amountToBet; } set { amountToBet = value; } }
@@ -52,6 +52,8 @@ public class Player : MonoBehaviourPunCallbacks//, IOnEventCallback
     {
         money -= Dealer.MinimumBet;
         totalAmountBetThisRound = Dealer.MinimumBet;
+        playerSeat.UpdatePlayerMoney(totalAmountBetThisRound, money);
+        UpdateClientMoney();
     }
     public void Raise(int amountToRaise)
     {
@@ -114,10 +116,10 @@ public class Player : MonoBehaviourPunCallbacks//, IOnEventCallback
         Debug.Log(name + " folded and is no longer in play");
         hasChosenAction = true;
         playStatus = PlayStatus.Folded;
+        playerSeat.GreyOutIcon();
     }
     public void SetupHand()
     {
-
         cards.Sort(new CompareCardsByValue());
         //hand.SetHandStrength(cards);
         /* Debug.LogWarning(name + "'s poker hand is " + hand.strength);
@@ -130,7 +132,12 @@ public class Player : MonoBehaviourPunCallbacks//, IOnEventCallback
     {
         hand.GetHandStrength(cards);
     }
-
+    public void AddWinningsToMoney(int moneyEarned)
+    {
+        money += moneyEarned;
+        playerSeat.UpdatePlayerMoney(totalAmountBetThisRound, money);
+        UpdateClientMoney();
+    }
     void UpdateClientMoney()
     {
         object[] datas = new object[] { photonView.ViewID, money, totalAmountBetThisRound };
@@ -155,7 +162,6 @@ public class Player : MonoBehaviourPunCallbacks//, IOnEventCallback
 
         PhotonNetwork.RaiseEvent((byte)EventCodes.PlayerTurn, datas, raiseEventOptions, sendOptions);
     }
-
     void CreateLocalPlayerCard(object[] data)
     {
         Card newCard;

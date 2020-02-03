@@ -68,7 +68,8 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
         {
             Debug.Log("Everyone folded, " + playersLeft[0] + " wins be default!");
             UIManager.DeclareWinner(playersLeft);
-            Dealer.GiveWinnersEarnings(playersLeft.Select(players => players.photonView.ViewID).ToArray());
+            //Dealer.GiveWinnersEarnings(playersLeft.Select(players => players.photonView.ViewID).ToArray());
+            playersLeft[0].AddWinningsToMoney(Dealer.Pot);
         }
         else
         {
@@ -112,7 +113,11 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
                 }
             }
             UIManager.DeclareWinner(winners);
-            Dealer.GiveWinnersEarnings(winners.Select(players => players.photonView.ViewID).ToArray());
+            //Dealer.GiveWinnersEarnings(winners.Select(players => players.photonView.ViewID).ToArray());
+            foreach (Player winner in winners)
+            {
+                winner.AddWinningsToMoney(Dealer.Pot / winners.Count);
+            }
         }
     }
     static List<Player> BreakTie(List<Player> tiedPlayers)
@@ -231,7 +236,7 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
     void DisconnectPlayers()
     {
-        object[] datas = new object[] {};
+        object[] datas = new object[] { };
         RaiseEventOptions raiseEventOptions = new RaiseEventOptions()
         {
             Receivers = ReceiverGroup.Others,
@@ -243,7 +248,7 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
         Debug.Log("PhotonManager: disconnect func");
     }
 
-     IEnumerator DisconnectCor()
+    IEnumerator DisconnectCor()
     {
         DisconnectPlayers();
         yield return new WaitForSeconds(2);
@@ -257,7 +262,7 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
         StartCoroutine("DisconnectCor");
     }
 
-   IEnumerator QuitCor()
+    IEnumerator QuitCor()
     {
         DisconnectPlayers();
         yield return new WaitForSeconds(2);

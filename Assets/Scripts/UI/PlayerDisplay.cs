@@ -49,10 +49,19 @@ public class PlayerDisplay : MonoBehaviourPun
     }
     public void ShowPlayerTurnMarker()
     {
-
+        turnMarker.gameObject.SetActive(true);
     }
     public void HidePlayerTurnMarker()
     {
+        turnMarker.gameObject.SetActive(false);
+    }
+    public void GreyOutIcon()
+    {
+        playerIcon.color = new Color(0.4f, 0.4f, 0.4f);
+    }
+    public void BrightenIcon()
+    {
+        playerIcon.color = Color.white;
 
     }
 }
