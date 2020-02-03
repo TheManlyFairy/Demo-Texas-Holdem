@@ -142,17 +142,18 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
             communityCards[0] = Pull();
             communityCards[1] = Pull();
             communityCards[2] = Pull();
-            if (OnCommunityUpdate != null)
-                OnCommunityUpdate();
 
-            dealerRef.StartCoroutine(dealerRef.BettingRound());
+            if (OnCommunityUpdate != null)
+                OnCommunityUpdate(3);
+
+            dealerRef.StartCoroutine(WaitForCommunityAnimation());
         }
         else if (communityCards[3] == null)
         {
             Debug.LogWarning("Turn betting round!");
             communityCards[3] = Pull();
             if (OnCommunityUpdate != null)
-                OnCommunityUpdate();
+                OnCommunityUpdate(1);
 
             dealerRef.StartCoroutine(dealerRef.BettingRound());
         }
@@ -162,9 +163,9 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
             finalBettingRound = true;
             communityCards[4] = Pull();
             if (OnCommunityUpdate != null)
-                OnCommunityUpdate();
-            //PhotonGameManager.DeclareWinner(bettingPlayers);
-            dealerRef.StartCoroutine(dealerRef.BettingRound());
+                OnCommunityUpdate(1);
+
+            dealerRef.StartCoroutine(WaitForCommunityAnimation());
         }
     }
     public static void StartBettingRound()
@@ -198,7 +199,7 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
         System.Array.Clear(communityCards, 0, 5);
         drawnCards.Clear();
         if (OnCommunityUpdate != null)
-            OnCommunityUpdate();
+            OnCommunityUpdate(-1);
 
         ShuffleDeck();
         DealCards();
@@ -224,7 +225,7 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
         System.Array.Clear(communityCards, 0, 5);
         drawnCards.Clear();
         if (OnCommunityUpdate != null)
-            OnCommunityUpdate();
+            OnCommunityUpdate(-1);
 
         ShuffleDeck();
         DealCards();
@@ -337,6 +338,14 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
 
         }
         return true;
+    }
+
+    static IEnumerator WaitForCommunityAnimation()
+    {
+        while (CommunityHandDisplay.AnimationInProgress)
+            yield return null;
+
+        dealerRef.StartCoroutine(dealerRef.BettingRound());
     }
     #endregion
 

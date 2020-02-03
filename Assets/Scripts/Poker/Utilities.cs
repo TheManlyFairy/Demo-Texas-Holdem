@@ -16,8 +16,9 @@ namespace Utilities
     }
 
     public delegate void DealingCardsEvent();
-    public delegate void CommunityCardsUpdate();
+    public delegate void CommunityCardsUpdate(int cardsToPull);
     public delegate void InterfaceUpdate();
+    public delegate void GameStart();
     public class CompareCardsByValue : IComparer<Card>
     {
         public int Compare(Card x, Card y)

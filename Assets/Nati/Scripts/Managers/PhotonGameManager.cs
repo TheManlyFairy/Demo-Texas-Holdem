@@ -12,7 +12,7 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
     //public static event DealingCardsEvent OnDealingCards;
     public static PhotonGameManager instance;
     public static List<Player> players;
-
+    public static event GameStart onGameStart;
     //static Player currentPlayer;
 
     public static Player CurrentPlayer { get; set; }
@@ -46,6 +46,9 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
     public void StartGame()
     {
         CurrentPlayer = players[0];
+
+        if (onGameStart != null)
+            onGameStart();
 
         Dealer.StartGame();
         foreach (Player p in players)

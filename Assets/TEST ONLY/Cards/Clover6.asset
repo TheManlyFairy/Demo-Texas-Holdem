@@ -15,5 +15,5 @@ MonoBehaviour:
   value: 6
   suit: 3
   isCommunityCard: 0
-  sprite: {fileID: 0}
+  sprite: {fileID: 21300010, guid: c35d75ef34db9b64f87ac04050b16d64, type: 3}
   markedForDiscard: 0
