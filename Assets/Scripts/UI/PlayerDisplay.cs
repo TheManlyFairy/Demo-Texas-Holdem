@@ -19,7 +19,7 @@ public class PlayerDisplay : MonoBehaviourPun
 
     public Vector2 IconAnchoredPosition { get { return playerIcon.GetComponent<RectTransform>().anchoredPosition; } }
 
-    public void SetupPlayer(Player player, Sprite playerIcon)
+    public void SetupPlayer(Player player)
     {
         //Assign player icon here
         // playerName.text = player.photonView.ViewID + "";
