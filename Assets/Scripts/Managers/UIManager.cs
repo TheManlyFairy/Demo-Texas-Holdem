@@ -74,9 +74,9 @@ public class UIManager : MonoBehaviour
         //  playerHandDisplay.SetupPlayerHand(PhotonGameManager.players[index]);
         playerName.text = PhotonGameManager.players[index].name;
     }
-    public void UpdatePregamePlayers(Player newPlayer)
+    public void UpdatePregamePlayers(Player newPlayer, Sprite playerIcon)
     {
-        pregamePlayerDisplay[playerIndex].SetupNameOnly(newPlayer);
+        pregamePlayerDisplay[playerIndex].SetupNameOnly(newPlayer, playerIcon);
         playerSeats[playerIndex].SetupPlayer(newPlayer);
         newPlayer.playerSeat = playerSeats[playerIndex];
         pregamePlayerDisplay[playerIndex].gameObject.SetActive(true);

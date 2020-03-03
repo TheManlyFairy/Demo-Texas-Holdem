@@ -27,9 +27,10 @@ public class PlayerDisplay : MonoBehaviourPun
         playerRemainingMoney.text = "$" + player.money;
         playerTotalBet.text = "$0";
     }
-    public void SetupNameOnly(Player player)
+    public void SetupNameOnly(Player player, Sprite icon)
     {
         playerName.text = player.name;
+        playerIcon.sprite = icon;
     }
     public void UpdatePlayerMoney(int totalBet, int remainingMoney)
     {

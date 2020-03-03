@@ -176,6 +176,15 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
     }
 
+    Sprite BuildSpriteFromByteArray(byte[] imageData)
+    {
+        Sprite playerIcon;
+        Texture2D newTexture = new Texture2D(64, 64, TextureFormat.RGBA32, false);
+        newTexture.LoadImage(imageData);
+        newTexture.Apply();
+        playerIcon = Sprite.Create(newTexture, new Rect(0, 0, newTexture.width, newTexture.height), new Vector2(.5f, .5f));
+        return playerIcon;
+    }
     public void OnEvent(EventData photonEvent)
     {
         byte eventCode = photonEvent.Code;
@@ -186,11 +195,10 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
                 {
                     object[] data = (object[])photonEvent.CustomData;
                     Player temp = PhotonView.Find((int)data[0]).gameObject.GetComponent<Player>();
-                    
                     temp.name = (string)data[1];
-
+                    Sprite playerIcon = BuildSpriteFromByteArray((byte[])data[2]);
                     players.Add(temp);
-                    UIManager.instance.UpdatePregamePlayers(temp);
+                    UIManager.instance.UpdatePregamePlayers(temp,playerIcon);
                     Debug.Log("Players found: " + players.Count);
                 }
                 break;
