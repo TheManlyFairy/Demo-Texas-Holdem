@@ -5,6 +5,8 @@ using Photon.Pun;
 public class PlayerDisplay : MonoBehaviourPun
 {
     [SerializeField]
+    Image playerIconMask;
+    [SerializeField]
     Image playerIcon;
     [SerializeField]
     Image turnMarker;
@@ -17,13 +19,14 @@ public class PlayerDisplay : MonoBehaviourPun
     [SerializeField]
     GameObject moneyBetFrame;
 
-    public Vector2 IconAnchoredPosition { get { return playerIcon.GetComponent<RectTransform>().anchoredPosition; } }
+    public Vector2 IconAnchoredPosition { get { return playerIconMask.GetComponent<RectTransform>().anchoredPosition; } }
 
-    public void SetupPlayer(Player player)
+    public void SetupPlayer(Player player, Sprite icon)
     {
         //Assign player icon here
         // playerName.text = player.photonView.ViewID + "";
         playerName.text = player.name;
+        playerIcon.sprite = icon;
         playerRemainingMoney.text = "$" + player.money;
         playerTotalBet.text = "$0";
     }
@@ -43,6 +46,7 @@ public class PlayerDisplay : MonoBehaviourPun
     }
     public void ShowPlayerGameDisplay()
     {
+        playerIconMask.gameObject.SetActive(true);
         playerIcon.gameObject.SetActive(true);
         playerName.gameObject.SetActive(true);
         playerRemainingMoney.gameObject.SetActive(true);

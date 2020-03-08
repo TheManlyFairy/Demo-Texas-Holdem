@@ -6,7 +6,7 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Nati/Scenes/QuickStartLobby.unity
+    path: Assets/Scenes/QuickStartLobby.unity
     guid: 6d36f259fd95fc14dad04b276fa63094
   - enabled: 1
     path: Assets/Scenes/AestheticsScene.unity

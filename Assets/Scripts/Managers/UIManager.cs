@@ -77,24 +77,11 @@ public class UIManager : MonoBehaviour
     public void UpdatePregamePlayers(Player newPlayer, Sprite playerIcon)
     {
         pregamePlayerDisplay[playerIndex].SetupNameOnly(newPlayer, playerIcon);
-        playerSeats[playerIndex].SetupPlayer(newPlayer);
+        playerSeats[playerIndex].SetupPlayer(newPlayer, playerIcon);
         newPlayer.playerSeat = playerSeats[playerIndex];
         pregamePlayerDisplay[playerIndex].gameObject.SetActive(true);
         playerIndex++;
-        /*foreach (PlayerDisplay playerDisplay in pregamePlayerDisplay)
-        {
-            if (!playerDisplay.gameObject.activeSelf)
-            {
-                newPlayer.playerSeat = playerDisplay;
-                playerDisplay.SetupPlayer(newPlayer);
-                playerDisplay.gameObject.SetActive(true);
-                break;
-            }
-            else if (playerDisplay.gameObject.activeSelf)
-            {
-                continue;
-            }
-        }*/
+        
     }
     public void UpdatePot()
     {
