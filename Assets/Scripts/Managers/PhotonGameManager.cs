@@ -240,10 +240,23 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
                     Debug.Log(CurrentPlayer.name + " has folded");
                 }
                 break;
+
+            case (byte)EventCodes.PlayerDisconnected:
+                {
+                    object[] data = (object[])photonEvent.CustomData;
+                    Player temp = PhotonView.Find((int)data[0]).gameObject.GetComponent<Player>();
+                    players.Remove(temp);
+                    Debug.Log($"Player {temp.name} has disconnected, playercount {players.Count}");
+                    Destroy(temp.playerSeat.gameObject);
+                    Destroy(temp.gameObject);                    
+                }
+                break;
+
         }
     }
 
-    void DisconnectPlayers()
+    #region Disconnect Players
+    void DisconnectPlayers() // disconnect event
     {
         object[] datas = new object[] { };
         RaiseEventOptions raiseEventOptions = new RaiseEventOptions()
@@ -257,6 +270,11 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
         Debug.Log("PhotonManager: disconnect func");
     }
 
+    public void Disconnect() // disconnect button on lobby menu
+    {
+        StartCoroutine("DisconnectCor");
+    }
+
     IEnumerator DisconnectCor()
     {
         DisconnectPlayers();
@@ -266,9 +284,9 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
         Debug.Log("Disconnected");
     }
 
-    public void Disconnect()
+    public void Quit() // quit button on victory menu
     {
-        StartCoroutine("DisconnectCor");
+        StartCoroutine("QuitCor");
     }
 
     IEnumerator QuitCor()
@@ -278,11 +296,13 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
         Application.Quit();
     }
 
-    public void Quit()
+    void OnApplicationPause()
     {
-        StartCoroutine("QuitCor");
+        DisconnectPlayers();
+        Debug.Log("Application ending after " + Time.time + " seconds");
     }
 
+    #endregion
 
 
     #region Unused Methods
