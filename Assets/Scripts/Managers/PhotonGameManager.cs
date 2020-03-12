@@ -13,6 +13,7 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
     public static PhotonGameManager instance;
     public static List<Player> players;
     public static event GameStart onGameStart;
+    public static event PlayerDisconnected onPlayerDisconnected;
     //static Player currentPlayer;
 
     public static Player CurrentPlayer { get; set; }
@@ -167,15 +168,6 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
         return winningPlayers;
     }
 
-    IEnumerator BettingRound()
-    {
-        List<Player> bettingPlayers = GameManager.players;
-
-        yield return null;
-
-
-    }
-
     Sprite BuildSpriteFromByteArray(byte[] imageData)
     {
         Sprite playerIcon;
@@ -248,7 +240,11 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
                     players.Remove(temp);
                     Debug.Log($"Player {temp.name} has disconnected, playercount {players.Count}");
                     Destroy(temp.playerSeat.gameObject);
-                    Destroy(temp.gameObject);                    
+                    Destroy(temp.gameObject);
+                    if (onPlayerDisconnected != null)
+                    {
+                        onPlayerDisconnected();
+                    }
                 }
                 break;
 
@@ -272,7 +268,7 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
     public void Disconnect() // disconnect button on lobby menu
     {
-        StartCoroutine("DisconnectCor");
+        StartCoroutine(DisconnectCor());
     }
 
     IEnumerator DisconnectCor()
@@ -281,12 +277,13 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
         yield return new WaitForSeconds(2);
         PhotonNetwork.Disconnect();
         PhotonNetwork.LoadLevel(0);
+        PhotonNetwork.SendAllOutgoingCommands();
         Debug.Log("Disconnected");
     }
 
     public void Quit() // quit button on victory menu
     {
-        StartCoroutine("QuitCor");
+        StartCoroutine(QuitCor());
     }
 
     IEnumerator QuitCor()
@@ -301,7 +298,6 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
         DisconnectPlayers();
         Debug.Log("Application ending after " + Time.time + " seconds");
     }
-
     #endregion
 
 

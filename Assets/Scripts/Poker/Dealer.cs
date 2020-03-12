@@ -38,11 +38,13 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
     private void OnEnable()
     {
         PhotonNetwork.AddCallbackTarget(this);
+        PhotonGameManager.onPlayerDisconnected += ParsePlayersCanStillBet;
     }
 
     private void OnDisable()
     {
         PhotonNetwork.RemoveCallbackTarget(this);
+        PhotonGameManager.onPlayerDisconnected -= ParsePlayersCanStillBet;
     }
 
     private void Awake()
@@ -252,27 +254,36 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
 
             foreach (Player player in bettingPlayers)
             {
-                if (player.playStatus == PlayStatus.AllIn)
+                if (player != null)
                 {
-                    //Debug.Log(player.name + "is all in and cannot bet any more.");
-                    continue;
+                    if (player.playStatus == PlayStatus.AllIn)
+                    {
+                        //Debug.Log(player.name + "is all in and cannot bet any more.");
+                        continue;
+                    }
+
+                    PhotonGameManager.CurrentPlayer = player;
+                    PhotonGameManager.CurrentPlayer.PlayerTurnUpdate();
+                    PhotonGameManager.CurrentPlayer.playerSeat.ShowPlayerTurnMarker();
+                    Debug.Log(player.name + "'s turn: ");
+
+                    while (player != null & !player.hasChosenAction)
+                    {
+                        //Debug.Log("Stuck in a loop?");
+                        yield return null;
+                    }
+
+                    if (player != null)
+                    {
+                        player.hasChosenAction = false;
+                        PhotonGameManager.CurrentPlayer.playerSeat.HidePlayerTurnMarker();
+                    }
+
+                    ParsePlayersStillBetting();
+                    if (bettingPlayers.Count == 1 || AllPlayersDoneBetting())
+                        break;
                 }
 
-                PhotonGameManager.CurrentPlayer = player;
-                PhotonGameManager.CurrentPlayer.PlayerTurnUpdate();
-                PhotonGameManager.CurrentPlayer.playerSeat.ShowPlayerTurnMarker();
-                Debug.Log(player.name + "'s turn: ");
-
-                while (!player.hasChosenAction)
-                {
-                    //Debug.Log("Stuck in a loop?");
-                    yield return null;
-                }
-                player.hasChosenAction = false;
-                PhotonGameManager.CurrentPlayer.playerSeat.HidePlayerTurnMarker();
-                ParsePlayersStillBetting();
-                if (bettingPlayers.Count == 1 || AllPlayersDoneBetting())
-                    break;
             }
 
             yield return null;
@@ -295,11 +306,14 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
         List<Player> playersStillInGame = new List<Player>();
         foreach (Player p in bettingPlayers)
         {
-            if (p.playStatus != PlayStatus.Folded)
-                playersStillInGame.Add(p);
-            else
+            if(p!=null)
             {
-                p.playerSeat.GreyOutIcon();
+                if (p.playStatus != PlayStatus.Folded)
+                    playersStillInGame.Add(p);
+                else
+                {
+                    p.playerSeat.GreyOutIcon();
+                }
             }
         }
         bettingPlayers = playersStillInGame;
@@ -309,7 +323,7 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
         List<Player> playersNotBroke = new List<Player>();
         foreach (Player p in PhotonGameManager.players)
         {
-            if (p.money != 0)
+            if (p!=null && p.money != 0)
                 playersNotBroke.Add(p);
         }
         bettingPlayers = playersNotBroke;
@@ -318,29 +332,28 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
     {
         foreach (Player p in bettingPlayers)
         {
-            p.hasChosenAction = false;
-            p.playStatus = PlayStatus.Betting;
-            p.playerSeat.BrightenIcon();
+            if (p != null)
+            {
+                p.hasChosenAction = false;
+                p.playStatus = PlayStatus.Betting;
+                p.playerSeat.BrightenIcon();
+            }
         }
     }
     bool AllPlayersDoneBetting()
     {
         foreach (Player p in bettingPlayers)
         {
-            if (p.playStatus == PlayStatus.AllIn)
-                continue;
-
-            /*if (p.TotalBetThisRound < currentBetToMatch)
+            if (p != null)
             {
-                Debug.Log(p.name + " hasn't matched the bet yet");
-                return false;
-            }*/
-            if (p.playStatus == PlayStatus.Betting)
-            {
-                Debug.Log(p.name + " is still in the betting status");
-                return false;
+                if (p.playStatus == PlayStatus.AllIn)
+                    continue;
+                if (p.playStatus == PlayStatus.Betting)
+                {
+                    Debug.Log(p.name + " is still in the betting status");
+                    return false;
+                }
             }
-
         }
         return true;
     }
@@ -420,66 +433,7 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
 
         PhotonNetwork.RaiseEvent((byte)EventCodes.ClientDealer, datas, raiseEventOptions, sendOptions);
     }
-    
-    /*public static void GiveWinnersEarnings(int[] winnerViewIds)
-    {
-        object[] datas = new object[] { winnerViewIds, pot/winnerViewIds.Length };
-        RaiseEventOptions raiseEventOptions = new RaiseEventOptions()
-        {
-            Receivers = ReceiverGroup.Others,
-            CachingOption = EventCaching.DoNotCache
-        };
-        SendOptions sendOptions = new SendOptions() { Reliability = false };
-        PhotonNetwork.RaiseEvent((byte)EventCodes.GrantWinnerMoney, datas, raiseEventOptions, sendOptions);
-    }*/
-    /*public void OnEvent(EventData photonEvent)
-    {
-        byte eventCode = photonEvent.Code;
-
-        switch (eventCode)
-        {
-            case (byte)EventCodes.PlayerRaise:
-                {
-                    object[] data = (object[])photonEvent.CustomData;
-
-                    int betToAdd = (int)data[0];
-                    PhotonGameManager.CurrentPlayer.Raise(betToAdd);
-                    //AddBet(betToAdd);
-                    Debug.Log(PhotonGameManager.CurrentPlayer.name + " raised by " + betToAdd);
-                }
-                break;
-
-            case (byte)EventCodes.PlayerCall:
-                {
-                    object[] data = (object[])photonEvent.CustomData;
-
-                    //AddBet(betToAdd);
-                    PhotonGameManager.CurrentPlayer.Call();
-                    Debug.Log(PhotonGameManager.CurrentPlayer.name + " has called");
-                }
-                break;
-
-            case (byte)EventCodes.PlayerCheck:
-                {
-                    object[] data = (object[])photonEvent.CustomData;
-
-                    currentBetToMatch = 0;
-                    Debug.Log(PhotonGameManager.CurrentPlayer.name + " has checked");
-
-                }
-                break;
-
-            case (byte)EventCodes.PlayerFold:
-                {
-                    object[] data = (object[])photonEvent.CustomData;
-
-                    currentBetToMatch = 0;
-                    Debug.Log(PhotonGameManager.CurrentPlayer.name + " has folded");
-                }
-                break;
-        }
-    }*/
     #endregion
 
-    
+
 }

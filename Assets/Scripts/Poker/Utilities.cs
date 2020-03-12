@@ -15,7 +15,7 @@ namespace Utilities
         PlayerTurn, ClientDealer, ClearPlayerCards, GrantWinnerMoney, ServerDisconnected,
         PlayerDisconnected
     }
-
+    public delegate void PlayerDisconnected();
     public delegate void DealingCardsEvent();
     public delegate void CommunityCardsUpdate(int cardsToPull);
     public delegate void InterfaceUpdate();
