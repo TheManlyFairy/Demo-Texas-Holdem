@@ -277,7 +277,6 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
         yield return new WaitForSeconds(2);
         PhotonNetwork.Disconnect();
         PhotonNetwork.LoadLevel(0);
-        PhotonNetwork.SendAllOutgoingCommands();
         Debug.Log("Disconnected");
     }
 
