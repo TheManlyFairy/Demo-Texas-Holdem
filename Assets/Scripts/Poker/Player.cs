@@ -76,6 +76,7 @@ public class Player : MonoBehaviourPunCallbacks//, IOnEventCallback
         }
         else
         {
+            playStatus = PlayStatus.Raised;
             Debug.Log(name + " raised the stakes by " + amountToRaise);
         }
         totalAmountBetThisRound += amountToRaise;
@@ -98,6 +99,7 @@ public class Player : MonoBehaviourPunCallbacks//, IOnEventCallback
         }
         else
         {
+            playStatus = PlayStatus.Called;
             amountToBet = Dealer.HighestBetMade - totalAmountBetThisRound;
             money -= amountToBet;
             totalAmountBetThisRound += amountToBet;

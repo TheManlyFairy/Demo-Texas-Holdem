@@ -18,6 +18,7 @@ public class UIManager : MonoBehaviour
     public Button NextRound, RestartGame, QuitGame;
     public GameObject winnerDisplay;
     public TextMeshProUGUI winnerText;
+    public GameObject postVictoryOptions;
     /*Unused Variables
      * //public Slider betValueSlider;
     //public InputField betValueField;
@@ -39,17 +40,9 @@ public class UIManager : MonoBehaviour
         //  instance.SetupUIListeners();
     }
 
-    public static void DeclareWinner(List<Player> winners)
+    public static void DeclareWinner(List<Player> winners, float delayTime)
     {
-        if (winners.Count == 1)
-        {
-            instance.winnerText.text = winners[0].name + " wins!";
-        }
-        else
-        {
-            instance.winnerText.text = "Tied!";
-        }
-        instance.winnerDisplay.SetActive(true);
+        instance.StartCoroutine(instance.DelayedWinnerDeclaration(winners, delayTime));
     }
 
     void UpdateGameInterface()
@@ -81,12 +74,33 @@ public class UIManager : MonoBehaviour
         newPlayer.playerSeat = playerSeats[playerIndex];
         pregamePlayerDisplay[playerIndex].gameObject.SetActive(true);
         playerIndex++;
-        
+
     }
     public void UpdatePot()
     {
         string pot = string.Format("{0:n}", Dealer.Pot);
         currentPot.text = pot + " $";
+    }
+
+    IEnumerator DelayedWinnerDeclaration(List<Player> winners, float delayTime)
+    {
+        instance.winnerText.text = "Game Over! You have " + delayTime + " seconds to show your hand to everyone else!";
+        instance.winnerDisplay.SetActive(true);
+
+        yield return new WaitForSeconds(delayTime);
+
+        if (winners.Count == 1)
+        {
+            instance.winnerText.text = winners[0].name + " wins!";
+        }
+        else
+        {
+            instance.winnerText.text = "Tied!";
+        }
+
+        postVictoryOptions.SetActive(true);
+
+
     }
     /* Unused Methods
     * //void SetupUIListeners()

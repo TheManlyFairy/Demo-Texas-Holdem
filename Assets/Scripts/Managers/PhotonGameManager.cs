@@ -18,6 +18,7 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
     public static Player CurrentPlayer { get; set; }
 
+    private static float timeDelayToSendEarnings;
     private void OnEnable()
     {
         PhotonNetwork.AddCallbackTarget(this);
@@ -68,7 +69,7 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
         if (playersLeft.Count == 1)
         {
             Debug.Log("Everyone folded, " + playersLeft[0] + " wins be default!");
-            UIManager.DeclareWinner(playersLeft);
+            UIManager.DeclareWinner(playersLeft, 0);
             //Dealer.GiveWinnersEarnings(playersLeft.Select(players => players.photonView.ViewID).ToArray());
             playersLeft[0].AddWinningsToMoney(Dealer.Pot);
         }
@@ -113,12 +114,11 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
                         Debug.Log(p.name);
                 }
             }
-            UIManager.DeclareWinner(winners);
+            timeDelayToSendEarnings = players.Count * 5;
+            UIManager.DeclareWinner(winners, timeDelayToSendEarnings);
+            instance.StartCoroutine(DelaySendEarningsToPlayers(players));
             //Dealer.GiveWinnersEarnings(winners.Select(players => players.photonView.ViewID).ToArray());
-            foreach (Player winner in winners)
-            {
-                winner.AddWinningsToMoney(Dealer.Pot / winners.Count);
-            }
+
         }
     }
     static List<Player> BreakTie(List<Player> tiedPlayers)
@@ -177,6 +177,16 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
         playerIcon = Sprite.Create(newTexture, new Rect(0, 0, newTexture.width, newTexture.height), new Vector2(.5f, .5f));
         return playerIcon;
     }
+
+    static IEnumerator DelaySendEarningsToPlayers(List<Player> winners)
+    {
+        yield return new WaitForSeconds(timeDelayToSendEarnings);
+
+        foreach (Player winner in winners)
+        {
+            winner.AddWinningsToMoney(Dealer.Pot / winners.Count);
+        }
+    }
     public void OnEvent(EventData photonEvent)
     {
         byte eventCode = photonEvent.Code;
@@ -190,7 +200,7 @@ public class PhotonGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
                     temp.name = (string)data[1];
                     Sprite playerIcon = BuildSpriteFromByteArray((byte[])data[2]);
                     players.Add(temp);
-                    UIManager.instance.UpdatePregamePlayers(temp,playerIcon);
+                    UIManager.instance.UpdatePregamePlayers(temp, playerIcon);
                     Debug.Log("Players found: " + players.Count);
                 }
                 break;

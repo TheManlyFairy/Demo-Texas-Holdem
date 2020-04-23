@@ -223,7 +223,7 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
         deck.AddRange(drawnCards);
         InstructPlayerToDisposeCards();
         ParsePlayersCanStillBet();
-        ResetPlayerActions();
+        ResetPlayerActions(true);
         System.Array.Clear(communityCards, 0, 5);
         drawnCards.Clear();
         if (OnCommunityUpdate != null)
@@ -245,13 +245,12 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
     }
     IEnumerator BettingRound()
     {
-        ResetPlayerActions();
+        ResetPlayerActions(true);
         ParsePlayersStillBetting();
         UpdateClientDealer();
+
         while (!AllPlayersDoneBetting() && bettingPlayers.Count > 1)
         {
-            ResetPlayerActions();
-
             foreach (Player player in bettingPlayers)
             {
                 if (player != null)
@@ -285,7 +284,7 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
                 }
 
             }
-
+            ResetPlayerActions(false);
             yield return null;
         }
 
@@ -306,14 +305,12 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
         List<Player> playersStillInGame = new List<Player>();
         foreach (Player p in bettingPlayers)
         {
-            if(p!=null)
+            if (p != null)
             {
-                if (p.playStatus != PlayStatus.Folded)
-                    playersStillInGame.Add(p);
-                else
-                {
-                    p.playerSeat.GreyOutIcon();
-                }
+                if (p.playStatus == PlayStatus.Folded)
+                    continue;
+
+                playersStillInGame.Add(p);
             }
         }
         bettingPlayers = playersStillInGame;
@@ -323,20 +320,30 @@ public class Dealer : MonoBehaviourPunCallbacks//, IOnEventCallback
         List<Player> playersNotBroke = new List<Player>();
         foreach (Player p in PhotonGameManager.players)
         {
-            if (p!=null && p.money != 0)
+            if (p != null && p.money != 0)
                 playersNotBroke.Add(p);
         }
         bettingPlayers = playersNotBroke;
     }
-    static void ResetPlayerActions()
+    static void ResetPlayerActions(bool isNewRound)
     {
         foreach (Player p in bettingPlayers)
         {
             if (p != null)
             {
-                p.hasChosenAction = false;
-                p.playStatus = PlayStatus.Betting;
-                p.playerSeat.BrightenIcon();
+                if (p.playStatus == PlayStatus.AllIn)
+                    continue;
+                if(isNewRound)
+                {
+                    p.hasChosenAction = false;
+                    p.playStatus = PlayStatus.Betting;
+                }
+                else if(p.TotalBetThisRound < HighestBetMade)
+                {
+                    p.hasChosenAction = false;
+                    p.playStatus = PlayStatus.Betting;
+                }
+                //p.playerSeat.BrightenIcon();
             }
         }
     }
